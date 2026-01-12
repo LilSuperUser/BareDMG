@@ -126,9 +126,30 @@ void parse_header(const RawRomHeader *raw, CartHeader *out) {
     out->version = raw->version;
 }
 
-// TODO: cart_print_header()
 // Print cartridge information to stdout
-void   cart_print_header(const CartHeader *hdr);
+void cart_print_header(const CartHeader *hdr) {
+    printf("================================\n");
+    printf("    Cartridge Information\n");
+    printf("================================\n");
+
+    printf("Title:         %s\n", hdr->title);
+    printf("Type:          0x%02X (%s)\n", hdr->cart_type, get_cart_type_name(hdr->cart_type));
+
+    size_t rom_kb = get_rom_size(hdr->rom_size_code) / 1024;
+    printf("ROM Size:      0x%02X (%zu KB)\n", hdr->rom_size_code, rom_kb);
+
+    size_t ram_kb = get_ram_size(hdr->ram_size_code) / 1024;
+    if (ram_kb > 0)
+        printf("RAM Size:      0x%02X (%zu KB)\n", hdr->ram_size_code, ram_kb);
+    else
+        printf("RAM Size:      0x%02X (No RAM)\n", hdr->ram_size_code);
+
+    printf("License Code:  0x%04X\n", hdr->lic_code);
+    printf("Version:       0x%02X\n", hdr->version);
+    printf("SGB Support:   %s\n", hdr->sgb_supported ? "Yes" : "No");
+    printf("CGB Support:   %s\n", hdr->cgb_supported ? "Yes" : "No");
+    printf("================================\n");
+}
 
 // Get RAM size in bytes from RAM size code
 // https://gbdev.io/pandocs/The_Cartridge_Header.html#0149--ram-size
