@@ -4,19 +4,129 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO: cart_load()
+/*
+EXIT CODES
+return 1; -->  failed to open
+return 2; -->  too small
+return 3; -->  malloc ROM failed
+return 4; -->  malloc RAM failed
+return 5; -->  fread failed
+*/
+
 // Load ROM from disk & parse header
-int    cart_load(Cartridge *cart, const char *path);
+int cart_load(Cartridge *cart, const char *path) {
+    // Open the ROM file
+    FILE *rom_f = fopen(path, "rb");
+    if (!rom_f) {
+        fprintf(stderr, "Failed to open ROM: %s\n", path);
+        return 1;
+    }
 
-// TODO: cart_unload()
-// Unlod the cart: Free the allocated memory for RAM & ROM
-void   cart_unload(Cartridge *cart);
+    // Get the file size
+    fseek(rom_f, 0, SEEK_END);
+    cart->rom_size = ftell(rom_f);
+    rewind(rom_f);
 
-// TODO: parse_header()
+    // Actual ROM file size should be greater than 0x0150
+    if (cart->rom_size < 0x0150) {
+        fclose(rom_f);
+        fprintf(stderr, "ROM file too small\n");
+        return 2;
+    }
+
+    // Allocate memory for ROM from heap
+    cart->rom = malloc(cart->rom_size);
+    if (!cart->rom) {
+        fclose(rom_f);
+        fprintf(stderr, "Failed to allocate ROM memory\n");
+        return 3;
+    }
+
+    // Read the ROM data from file into ROM buffer
+    size_t read = fread(cart->rom, 1, cart->rom_size, rom_f);
+    fclose(rom_f);
+
+    if (read != cart->rom_size) {
+        fprintf(stderr, "Failed to read ROM\n");
+        return 5;
+    }
+
+    // Copy raw header (located at 0x100 - 0x14F)
+    memcpy(&cart->raw_header, cart->rom + 0x0100, sizeof(RawRomHeader));
+
+    // Parse the header into usable format
+    parse_header(&cart->raw_header, &cart->header);
+
+    // Allocate RAM if needed (based on ram_size_code)
+    cart->ram_size = get_ram_size(cart->header.ram_size_code);
+    if (cart->ram_size > 0) {
+        cart->ram = calloc(1, cart->ram_size);
+        if (!cart->ram) {
+            fprintf(stderr, "Failed to allocate cartridge RAM\n");
+            free(cart->rom);
+            cart->rom      = NULL;
+            cart->rom_size = 0;
+            return 4;
+        }
+    } else {
+        cart->ram = NULL;
+    }
+
+    return 0;
+}
+
+// Unload the cart: Free the allocated memory for RAM & ROM
+void cart_unload(Cartridge *cart) {
+    if (cart->rom) {
+        free(cart->rom);
+        cart->rom = NULL;
+    }
+
+    if (cart->ram) {
+        free(cart->ram);
+        cart->ram = NULL;
+    }
+
+    cart->rom_size = 0;
+    cart->ram_size = 0;
+}
+
 // Parse raw header into usable format
-void   parse_header(const RawRomHeader *raw, CartHeader *out);
+void parse_header(const RawRomHeader *raw, CartHeader *out) {
+    // Make title null terminated
+    memcpy(out->title, raw->title, 16);
+    out->title[16]     = '\0';
 
-// TODO: cart_print_header
+    // Parse CGB flag (embedded in title area at byte 15)
+    // DMG only 0x00, CGB only (0xC0), both compatible (0x80)
+    u8 cgb_flag        = raw->title[15];
+    out->cgb_supported = (cgb_flag == 0x80 || cgb_flag == 0xC0);
+
+    // If CGB flag is present, actual title is only 15 chars
+    if (out->cgb_supported)
+        out->title[15] = '\0';
+
+    // Parse SGB flag
+    out->sgb_supported = (raw->sgb_flag == 0x03);
+
+    // Cartridge type (determine MBC)
+    out->cart_type     = raw->type;
+
+    // ROM/RAM sizes (encoded values not actual Bytes)
+    out->rom_size_code = raw->rom_size;
+    out->ram_size_code = raw->ram_size;
+
+    // License code (use new if old is 0x33)
+    if (raw->old_lic_code == 0x33)
+        out->lic_code = raw->new_lic;
+    else
+        out->lic_code = raw->old_lic_code;
+
+    // Version
+    out->version = raw->version;
+}
+
+// TODO: cart_print_header()
 // Print cartridge information to stdout
 void   cart_print_header(const CartHeader *hdr);
 
