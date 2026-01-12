@@ -11,6 +11,7 @@ return 2; -->  too small
 return 3; -->  malloc ROM failed
 return 4; -->  malloc RAM failed
 return 5; -->  fread failed
+return -1; --> cart header checksum failed
 */
 
 // Load ROM from disk & parse header
@@ -56,6 +57,14 @@ int cart_load(Cartridge *cart, const char *path) {
 
     // Parse the header into usable format
     parse_header(&cart->raw_header, &cart->header);
+
+    // Verify the header checksum
+    if (!cart_verify_header_checksum(cart)) {
+        fprintf(stderr, "Error: Invalid cartridge header checksum\n");
+        cart_unload(cart);
+        return -1;
+    }
+    printf("Cartridge header checksum: OK\n\n");
 
     // Allocate RAM if needed (based on ram_size_code)
     cart->ram_size = get_ram_size(cart->header.ram_size_code);
@@ -264,4 +273,17 @@ const char *get_cart_type_name(u8 type) {
         default:
             return "UNKNOWN";
     }
+}
+
+// Get header checksum
+// https://gbdev.io/pandocs/The_Cartridge_Header.html#014d--header-checksum
+bool cart_verify_header_checksum(const Cartridge *cart) {
+    const u8 *rom      = cart->rom;
+
+    u8        checksum = 0;
+    for (u16 addr = 0x0134; addr <= 0x014C; addr++) {
+        checksum = checksum - rom[addr] - 1;
+    }
+
+    return checksum == rom[0x014D];
 }
