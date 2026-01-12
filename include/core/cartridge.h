@@ -80,6 +80,9 @@ size_t      get_rom_size(u8 rom_size_code);
 // Get human-readable cartridge type name
 const char *get_cart_type_name(u8 type);
 
+// Get human-readbable publisher name from license code
+const char *get_publisher_name(u16 lic_code, bool is_old_code);
+
 // Get header checksum
 bool        cart_verify_header_checksum(const Cartridge *cart);
 
