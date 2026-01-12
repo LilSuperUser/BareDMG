@@ -126,10 +126,11 @@ void parse_header(const RawRomHeader *raw, CartHeader *out) {
     out->ram_size_code = raw->ram_size;
 
     // License code (use new if old is 0x33)
-    if (raw->old_lic_code == 0x33)
-        out->lic_code = raw->new_lic;
-    else
+    if (raw->old_lic_code == 0x33) {
+        out->lic_code = (raw->new_lic_hi << 8) | raw->new_lic_lo;
+    } else {
         out->lic_code = raw->old_lic_code;
+    }
 
     // Version
     out->version = raw->version;
