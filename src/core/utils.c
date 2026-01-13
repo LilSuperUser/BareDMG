@@ -1,5 +1,5 @@
 // src/core/utils.c
-#include "core/utils.h"
+#include <core/utils.h>
 
 // Swap endianness
 u16 swap_bytes(u16 val) {

@@ -1,6 +1,6 @@
 // tests/test_utils.c
 #include <check.h>
-#include "core/utils.h"
+#include <core/utils.h>
 
 // ==================================
 // Bit Manipulation Tests
