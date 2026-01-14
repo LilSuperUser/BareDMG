@@ -156,7 +156,6 @@ Each phase will be tested before moving forward. The emulator should remain in a
 
 
 ## Building & Running
-**Note**: The build system is still being set up. CMake configuration is in progress. Once ready:
 
 <details>
       <summary><h3>Required Tools & Libraries</h3></summary>
@@ -205,15 +204,18 @@ The emulator uses two types of testing:
 
 Tests are located in tests/ and test individual functions and components in isolation:
 - `test_utils.c` - tests bit manipulation helpers
+- `test_cartridge.c` - tests ROM parsing
 - `test_cpu.c` - tests CPU instruction execution
 - `test_mmu.c` - tests memory routing logic
-- `test_cartridge.c` - tests ROM parsing
 
 Run unit tests:
 ```zsh
+mkdir build && cd build
+cmake ..
+
 make test
 # or
-./tests/test_suite
+ctest
 ```
 
 ### 2. Integration Tests (Test ROMs)
