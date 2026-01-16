@@ -14,7 +14,7 @@ START_TEST(test_bit_macro) {
 END_TEST
 
 START_TEST(test_check_bit) {
-    u8 val = 0b10101010;
+    u8 val = 0xAA;
     ck_assert_int_eq(CHECK_BIT(val, 0), 0);
     ck_assert_int_eq(CHECK_BIT(val, 1), 1);
     ck_assert_int_eq(CHECK_BIT(val, 2), 0);
@@ -53,29 +53,29 @@ START_TEST(test_toggle_bit) {
 END_TEST
 
 START_TEST(test_get_bits) {
-    u8 val = 0b11010110;
+    u8 val = 0xD6;
 
     // Get lower 4 bits
-    ck_assert_uint_eq(GET_BITS(val, 0, 4), 0b0110);
+    ck_assert_uint_eq(GET_BITS(val, 0, 4), 0x06);
 
     // Get upper 4 bits
-    ck_assert_uint_eq(GET_BITS(val, 4, 4), 0b1101);
+    ck_assert_uint_eq(GET_BITS(val, 4, 4), 0x0D);
 
     // Get middle 3 bits (bits 2-4)
-    ck_assert_uint_eq(GET_BITS(val, 2, 3), 0b101);
+    ck_assert_uint_eq(GET_BITS(val, 2, 3), 0x05);
 }
 END_TEST
 
 START_TEST(test_set_bits) {
-    u8 val = 0b11110000;
+    u8 val = 0xF0;
 
     // Set lower 4 bits to 0b1010
-    val    = SET_BITS(val, 0, 4, 0b1010);
-    ck_assert_uint_eq(val, 0b11111010);
+    val    = SET_BITS(val, 0, 4, 0x0A);
+    ck_assert_uint_eq(val, 0xFA);
 
     // Set upper 4 bits to 0b0101
-    val = SET_BITS(val, 4, 4, 0b0101);
-    ck_assert_uint_eq(val, 0b01011010);
+    val = SET_BITS(val, 4, 4, 0x05);
+    ck_assert_uint_eq(val, 0x5A);
 }
 END_TEST
 
