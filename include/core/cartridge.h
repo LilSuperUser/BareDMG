@@ -12,7 +12,7 @@
 typedef struct {
     u8   entry[4];        // Entry point (0x100 - 0x103)
     u8   logo[0x30];      // Nintendo logo (0x0104 - 0x0133)
-    char title[16];       // Title in uppercase ASCII (0x0134 - 0x0143)
+    u8   title[16];       // Title in uppercase ASCII (0x0134 - 0x0143)
     u8   new_lic_hi;      // Upper 8 bits of the of new license code (0x0144)
     u8   new_lic_lo;      // Lower 8 bits of the new license code (0x0145)
     u8   sgb_flag;        // SGB flag (0x0146)
