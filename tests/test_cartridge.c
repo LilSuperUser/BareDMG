@@ -149,7 +149,7 @@ START_TEST(test_parse_header_old_license) {
     CartHeader   parsed = {0};
 
     // Setup raw header with old license code
-    memcpy(raw.title, "TEST GAME", strlen("TEST GAME")+1);
+    memcpy(raw.title, "TEST GAME", sizeof("TEST GAME"));
     raw.old_lic_code = 0x01; // Nintendo (old)
     raw.type         = 0x00; // ROM ONLY
     raw.rom_size     = 0x00; // 32 KB
@@ -175,7 +175,7 @@ START_TEST(test_parse_header_new_license) {
     CartHeader   parsed = {0};
 
     // Setup raw header with new license code
-    memcpy(raw.title, "POKEMON RED", strlen("POKEMON RED")+1);
+    memcpy(raw.title, "POKEMON RED", sizeof("POKEMON RED"));
     raw.old_lic_code = 0x33; // Magic value: use new license
     raw.new_lic_hi   = 0x30; // '0'
     raw.new_lic_lo   = 0x31; // '1'
