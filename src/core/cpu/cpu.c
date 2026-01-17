@@ -1,5 +1,5 @@
 // src/core/cpu/cpu.c
-#include <core/cpu.h>
+#include <core/cpu/cpu.h>
 #include <core/bus.h>
 #include <gbemu.h>
 #include <string.h>
