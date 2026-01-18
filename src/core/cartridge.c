@@ -64,7 +64,7 @@ int cart_load(Cartridge *cart, const char *path) {
         cart_unload(cart);
         return -1;
     }
-    printf("Cartridge header checksum: OK\n\n");
+    printf("\nCartridge header checksum: OK\n");
 
     // Allocate RAM if needed (based on ram_size_code)
     cart->ram_size = get_ram_size(cart->header.ram_size_code);
