@@ -1922,6 +1922,173 @@ u8 instr_cp_a_n(CPU *cpu) {
 }
 
 // ============================================================================
+// 16 - bit Aarithmetic Instructions
+// https://rgbds.gbdev.io/docs/v1.0.1/gbz80.7#16-bit_arithmetic_instructions
+// ============================================================================
+
+// ADD HL, r16
+// HL <- r16
+// Flags:
+// N - 0
+// H - Set if overflow from bit 11
+// C - Set if overflow from bit 15
+// ----------------------------------------------
+u8 instr_add_hl_bc(CPU *cpu) {
+    u16 hl       = cpu_read_hl(cpu);
+    u16 bc       = cpu_read_bc(cpu);
+    u16 result   = hl + bc;
+
+    // Preserve Z flag
+    u8  old_flag = cpu_get_flag(cpu, FLAG_ZERO);
+
+    cpu->regs.f  = 0;
+    if (check_half_carry_add_u16(hl, bc))
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (check_carry_add_u16(hl, bc))
+        cpu->regs.f |= FLAG_CARRY;
+
+    cpu->regs.f |= old_flag; // Restore Z flag
+    cpu_write_hl(cpu, result);
+    return 0;
+}
+
+u8 instr_add_hl_de(CPU *cpu) {
+    u16 hl       = cpu_read_hl(cpu);
+    u16 de       = cpu_read_de(cpu);
+    u16 result   = hl + de;
+
+    // Preserve Z flag
+    u8  old_flag = cpu_get_flag(cpu, FLAG_ZERO);
+
+    cpu->regs.f  = 0;
+    if (check_half_carry_add_u16(hl, de))
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (check_carry_add_u16(hl, de))
+        cpu->regs.f |= FLAG_CARRY;
+
+    cpu->regs.f |= old_flag; // Restore Z flag
+    cpu_write_hl(cpu, result);
+    return 0;
+}
+
+u8 instr_add_hl_hl(CPU *cpu) {
+    u16 hl       = cpu_read_hl(cpu);
+    u16 result   = hl + hl;
+
+    // Preserve Z flag
+    u8  old_flag = cpu_get_flag(cpu, FLAG_ZERO);
+
+    cpu->regs.f  = 0;
+    if (check_half_carry_add_u16(hl, hl))
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (check_carry_add_u16(hl, hl))
+        cpu->regs.f |= FLAG_CARRY;
+
+    cpu->regs.f |= old_flag; // Restore Z flag
+    cpu_write_hl(cpu, result);
+    return 0;
+}
+
+u8 instr_add_hl_sp(CPU *cpu) {
+    u16 hl       = cpu_read_hl(cpu);
+    u16 sp       = cpu->sp;
+    u16 result   = hl + sp;
+
+    // Preserve Z flag
+    u8  old_flag = cpu_get_flag(cpu, FLAG_ZERO);
+
+    cpu->regs.f  = 0;
+    if (check_half_carry_add_u16(hl, sp))
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (check_carry_add_u16(hl, sp))
+        cpu->regs.f |= FLAG_CARRY;
+
+    cpu->regs.f |= old_flag; // Restore Z flag
+    cpu_write_hl(cpu, result);
+    return 0;
+}
+
+// add sp, e8
+// Flags:
+// Z - 0
+// N - 0
+// H - Set if overflow from bit 3
+// C - Set if overflow from bit 7
+// ----------------------------------------------
+u8 instr_add_sp_e8(CPU *cpu) {
+    i8  e8      = (i8)mmu_read(cpu->gb, cpu->pc++);
+    u16 sp      = cpu->sp;
+    u16 result  = sp + e8;
+
+    u8  sp_low  = sp & 0xFF;
+    u8  val     = (u8)e8;
+
+    cpu->regs.f = 0;
+
+    if (check_half_carry_add(sp_low, val))
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (check_carry_add(sp_low, val))
+        cpu->regs.f |= FLAG_CARRY;
+
+    cpu->sp = result;
+    return 0;
+}
+
+// INC r16
+// Flags:
+// None Affected
+// ----------------------------------------------
+u8 instr_inc_bc(CPU *cpu) {
+    u16 bc = cpu_read_bc(cpu);
+    cpu_write_bc(cpu, ++bc);
+    return 0;
+}
+
+u8 instr_inc_de(CPU *cpu) {
+    u16 de = cpu_read_de(cpu);
+    cpu_write_bc(cpu, ++de);
+    return 0;
+}
+
+u8 instr_inc_hl(CPU *cpu) {
+    u16 hl = cpu_read_hl(cpu);
+    cpu_write_bc(cpu, ++hl);
+    return 0;
+}
+
+u8 instr_inc_sp(CPU *cpu) {
+    cpu->sp++;
+    return 0;
+}
+
+// DEC r16
+// Flags:
+// None Affected
+// ----------------------------------------------
+u8 instr_dec_bc(CPU *cpu) {
+    u16 bc = cpu_read_bc(cpu);
+    cpu_write_bc(cpu, --bc);
+    return 0;
+}
+
+u8 instr_dec_de(CPU *cpu) {
+    u16 de = cpu_read_de(cpu);
+    cpu_write_bc(cpu, --de);
+    return 0;
+}
+
+u8 instr_dec_hl(CPU *cpu) {
+    u16 hl = cpu_read_hl(cpu);
+    cpu_write_bc(cpu, --hl);
+    return 0;
+}
+
+u8 instr_dec_sp(CPU *cpu) {
+    cpu->sp--;
+    return 0;
+}
+
+// ============================================================================
 // Control Flow
 // ============================================================================
 
