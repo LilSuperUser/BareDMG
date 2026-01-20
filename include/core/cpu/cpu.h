@@ -26,12 +26,13 @@ typedef struct {
     } regs;
 
     // 16 bit registers
-    u16      sp; // Stack pointer
-    u16      pc; // Program Counter
+    u16             sp; // Stack pointer
+    u16             pc; // Program Counter
 
     // Interrupt state
-    bool     ime;    // Interrupt Master Enable
-    bool     halted; // CPU is haled?
+    bool            ime;           // Interrupt Master Enable
+    bool            ime_scheduled; // EI schedules IME to be set after next instruction
+    bool            halted;        // CPU is haled?
 
     // Pointer to the emulator context (for memory access)
     struct GameBoy *gb;

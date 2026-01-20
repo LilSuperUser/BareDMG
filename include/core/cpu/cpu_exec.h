@@ -309,13 +309,13 @@ u8 instr_rst_38(CPU *cpu);
 // =====================================================
 // CPU Control
 // =====================================================
-// TODO:
 u8 instr_nop(CPU *cpu);
 u8 instr_stop(CPU *cpu);
 u8 instr_halt(CPU *cpu);
 u8 instr_di(CPU *cpu);
 u8 instr_ei(CPU *cpu);
-u8 instr_prefix_cb(CPU *cpu);
+// TODO:
+// u8 instr_prefix_cb(CPU *cpu);
 
 // =====================================================
 // Rotates / Flags

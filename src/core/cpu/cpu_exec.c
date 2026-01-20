@@ -5,10 +5,56 @@
 #include <gbemu.h>
 #include <core/utils.h>
 
+// ============================================================================
+// NOTE: CPU Control
+// ============================================================================
 u8 instr_nop(CPU *cpu) {
     (void)cpu;
     return 0;
 }
+
+// NOTE: Full STOP implementation requires joypad
+// therefore, for now we treat it as HALT
+u8 instr_stop(CPU *cpu) {
+    // Read and discard the next byte (always 0x00)
+    mmu_read(cpu->gb, cpu->pc++);
+
+    // Set CPU to stopped state
+    cpu->halted = true; // Use halted flag for now
+
+    // TODO: When implementing joypad:
+    // - Stop CPU clock
+    // - Stop LCD display
+    // - Wake on button press
+
+    return 0;
+}
+
+u8 instr_halt(CPU *cpu) {
+    cpu->halted = true;
+
+    // TODO: When implementing interrupts:
+    // - CPU enters low-power mode
+    // - Wakes up when interrupt occurs (even if IME is disabled)
+    // - If IME is enabled, interrupt handler runs
+    // - If IME is disabled, execution continues after HALT
+    return 0;
+}
+
+// Disable interrupts
+u8 instr_di(CPU *cpu) {
+    cpu->ime = false;
+    return 0;
+}
+
+// Enable interrupts
+u8 instr_ei(CPU *cpu) {
+    cpu->ime_scheduled = true; // Set after NEXT instruction
+    return 0;
+}
+
+// TODO: When implementing extended instruction set
+/* u8 instr_prefix_cb(CPU *cpu); */
 
 // ============================================================================
 // NOTE: 8-bit Load Instructions

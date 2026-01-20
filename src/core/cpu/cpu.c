@@ -84,8 +84,15 @@ void cpu_clear_flag(CPU *cpu, u8 flag) {
 // Main execute function
 u8 cpu_step(CPU *cpu) {
     if (cpu->halted) {
-        // Just burn cycles
+        // TODO: Check for interrupts here
+        // If interrupt pending, unhalt
         return 4;
+    }
+
+    // Check if IME should be enabled (from previous EI)
+    if (cpu->ime_scheduled) {
+        cpu->ime           = true;
+        cpu->ime_scheduled = false;
     }
 
     // FETCH: Read OpCode at PC, increment PC
