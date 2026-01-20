@@ -394,6 +394,33 @@ u8 instr_ld_mem_hl_n(CPU *cpu) {
     return 0;
 }
 
+// ld hl, sp+e8
+u8 instr_ld_hl_sp_e8(CPU *cpu) {
+    i8  e8      = (i8)mmu_read(cpu->gb, cpu->pc++);
+    u16 sp      = cpu->sp;
+    u16 result  = sp + e8;
+
+    u8  sp_low  = sp & 0xFF;
+    u8  val     = (u8)e8;
+
+    cpu->regs.f = 0; // Z=0, N=0
+
+    if (check_half_carry_add(sp_low, val))
+        cpu->regs.f |= FLAG_HF_CARRY;
+
+    if (check_carry_add(sp_low, val))
+        cpu->regs.f |= FLAG_CARRY;
+
+    cpu_write_hl(cpu, result);
+    return 0;
+}
+
+// ld sp, hl
+u8 instr_ld_sp_hl(CPU *cpu) {
+    cpu->sp = cpu_read_hl(cpu);
+    return 0;
+}
+
 // =================================
 // NOTE: Special Memory Loads
 // =================================
@@ -501,6 +528,20 @@ u8 instr_ld_a_mem_a16(CPU *cpu) {
     u8  hi      = mmu_read(cpu->gb, cpu->pc++);
     u16 addr    = MAKE_U16(hi, lo);
     cpu->regs.a = mmu_read(cpu->gb, addr);
+    return 0;
+}
+
+// [a16] <- SP
+u8 instr_ld_mem_a16_sp(CPU *cpu) {
+    u8  lo   = mmu_read(cpu->gb, cpu->pc++);
+    u8  hi   = mmu_read(cpu->gb, cpu->pc++);
+    u16 addr = MAKE_U16(hi, lo);
+
+    u16 sp   = cpu->sp;
+
+    mmu_write(cpu->gb, addr, GET_LOW_BYTE(sp));
+    mmu_write(cpu->gb, addr + 1, GET_HIGH_BYTE(sp));
+
     return 0;
 }
 
@@ -675,6 +716,26 @@ u8 instr_inc_a(CPU *cpu) {
     return 0;
 }
 
+u8 instr_inc_mem_hl(CPU *cpu) {
+    u16  addr      = cpu_read_hl(cpu);
+    u8   value     = mmu_read(cpu->gb, addr);
+    u8   result    = value + 1;
+
+    bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+
+    cpu->regs.f    = 0;
+
+    if (result == 0)
+        cpu->regs.f |= FLAG_ZERO;
+    if ((value & 0x0F) == 0x0F)
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (old_carry)
+        cpu->regs.f |= FLAG_CARRY;
+
+    mmu_write(cpu->gb, addr, result);
+    return 0;
+}
+
 // DEC r8
 // Decrement the value in register r8 by 1.
 // Flags:
@@ -799,6 +860,25 @@ u8 instr_dec_a(CPU *cpu) {
         cpu->regs.f |= FLAG_CARRY;
 
     cpu->regs.a = result;
+    return 0;
+}
+
+u8 instr_dec_mem_hl(CPU *cpu) {
+    u16  addr      = cpu_read_hl(cpu);
+    u8   value     = mmu_read(cpu->gb, addr);
+    u8   result    = value - 1;
+
+    bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+
+    cpu->regs.f    = FLAG_SUBT;
+    if (result == 0)
+        cpu->regs.f |= FLAG_ZERO;
+    if ((value & 0x0F) == 0)
+        cpu->regs.f |= FLAG_HF_CARRY;
+    if (old_carry)
+        cpu->regs.f |= FLAG_CARRY;
+
+    mmu_write(cpu->gb, addr, result);
     return 0;
 }
 
@@ -1541,7 +1621,7 @@ u8 instr_and_a_a(CPU *cpu) {
     return 0;
 }
 
-u8 instr_and_a_hl(CPU *cpu) {
+u8 instr_and_a_mem_hl(CPU *cpu) {
     u16 addr    = cpu_read_hl(cpu);
     u8  value   = mmu_read(cpu->gb, addr);
     u8  result  = cpu->regs.a & value;
@@ -1648,7 +1728,7 @@ u8 instr_or_a_a(CPU *cpu) {
     return 0;
 }
 
-u8 instr_or_a_hl(CPU *cpu) {
+u8 instr_or_a_mem_hl(CPU *cpu) {
     u16 addr    = cpu_read_hl(cpu);
     u8  value   = mmu_read(cpu->gb, addr);
     u8  result  = cpu->regs.a | value;
@@ -1753,7 +1833,7 @@ u8 instr_xor_a_a(CPU *cpu) {
     return 0;
 }
 
-u8 instr_xor_a_hl(CPU *cpu) {
+u8 instr_xor_a_mem_hl(CPU *cpu) {
     u16 addr    = cpu_read_hl(cpu);
     u8  value   = mmu_read(cpu->gb, addr);
     u8  result  = cpu->regs.a ^ value;
@@ -1888,7 +1968,7 @@ u8 instr_cp_a_a(CPU *cpu) {
     return 0;
 }
 
-u8 instr_cp_a_hl(CPU *cpu) {
+u8 instr_cp_a_mem_hl(CPU *cpu) {
     u8  a       = cpu->regs.a;
     u16 addr    = cpu_read_hl(cpu);
     u8  value   = mmu_read(cpu->gb, addr);
