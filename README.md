@@ -190,9 +190,15 @@ cmake ..
 make
 ```
 
-#### Running
+#### Running & Options
 ```zsh
-./baredmg path/to/rom.gb
+./baredmg rom.gb              # default (info) mode (print cartridge info)
+./baredmg rom.gb -i           # info mode
+./baredmg rom.gb -s <num>     # step mode
+./baredmg rom.gb -r           # run mode
+
+./baredmg rom.gb -s 100 -d    # 100 instructions with debug mode
+./baredmg rom.gb -s 100       # 100 instructions without debug mode
 ```
 
 <details>
