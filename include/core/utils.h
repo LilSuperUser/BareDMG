@@ -66,6 +66,15 @@ bool check_carry_sub(u8 a, u8 b);      // Carry for subtraction
 bool check_half_carry_add_u16(u16 a, u16 b); // Half-carry bit 11->12
 bool check_carry_add_u16(u16 a, u16 b);      // Carry bit 15->16
 
+// ADC instruction helpers
+bool check_half_carry_adc(u8 a, u8 b, u8 carry);
+bool check_carry_adc(u8 a, u8 b, u8 carry);
+
+// SBC instruction helpers
+bool check_half_carry_sbc(u8 a, u8 b, u8 carry);
+bool check_carry_sbc(u8 a, u8 b, u8 carry);
+
+
 // Binary Coded Decimal (BCD) adjustment for DAA instruction
 u8   adjust_bcd(u8 value, bool subtract, bool carry, bool half_carry);
 

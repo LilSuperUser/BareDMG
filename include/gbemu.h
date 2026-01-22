@@ -2,6 +2,7 @@
 #ifndef GBEMU_H
 #define GBEMU_H
 
+#include <core/cpu/cpu.h>
 #include <core/cartridge.h>
 #include <core/utils.h>
 
@@ -10,7 +11,7 @@
 // ---------------------------------------------
 typedef struct GameBoy {
     // Components will be added as they are implemented.
-    // TODO: CPU
+    CPU       cpu;
     Cartridge cart;
 
     // Memory

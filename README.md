@@ -1,11 +1,15 @@
 ## BareDMG
+
 A **Game Boy emulator** written in **C**, focused on clarity and hardware accuracy.
 
 ### Philosophy
+
 **BareDMG** models the **Game Boy as actual hardware components**, not as a single blob of logic. Each part of the system (**CPU**, **PPU**, **memory bus**, **cartridge**) is implemented as separate module with its own state and interface.
 
 ### Hardware-First Design
+
 The emulator is structured around the same major components that exist in real hardware:
+
 - **CPU (`LR35902`)** - instruction fetch, decode, execute
 - **BUS/MMU** - routes all memory access between components
 - **Cartridge** - ROM data, external RAM, and blank switching (MBC)
@@ -15,6 +19,7 @@ The emulator is structured around the same major components that exist in real h
 - **Joypad** - input state management
 
 #### Each of these components:
+
 - owns its **own state**.
 - exposes a **small, explicit interface**.
 - does **not** directly reach into other components' internals.
@@ -22,7 +27,9 @@ The emulator is structured around the same major components that exist in real h
 Components communicate through the **central emulator context**, which acts as the system bus.
 
 ### The Emulator Context
+
 At the center of the project is a single struct (defined in `gbemu.h`) that represents the entire Game Boy system. It contains all hardware components and wiring between them:
+
 ```C
 typedef struct GameBoy {
     CPU cpu;
@@ -37,6 +44,7 @@ typedef struct GameBoy {
     bool running;
 }
 ```
+
 Every subsystem recieves a pointer to the emulator context (or the specific subcomponents if needed).
 
 <details>
@@ -114,46 +122,50 @@ BareDMG/
 
 </details>
 
-
 <details>
     <summary><h2>Build Order</h2></summary>
 
 The emulator will be built incrementally, implementing and testing each component before moving to the next.
 
 ### 1. **Foundation (Utils & Cartridges)**
+
 - Implement bit manipulation utilities
 - ROM file loading and header parsing
 - Basic **MBC1** support
 
 ### 2. **CPU Core**
+
 - Register implementation
 - Instruction decoding and execution
 - Interrupt handling
 - Validate with **Blargg's CPU test ROMs**
 
 ### 3. **Memory System**
+
 - MMU address routing
 - Memory-mapped I/O
 - Bank switching logic
 
 ### 4. **Timers & Joypad**
+
 - `DIV` and `TIMA` registers
 - Input state management
 
 ### 5. **PPU (Graphics)**
+
 - LCD timing and modes
 - Background rendering
 - Sprite (OBJ) rendering
 - Window layer
 
 ### 6. **APU (Sounds)**
+
 - Sound channels (pulse, wave, noise)
 - Audio mixing and output
 
 Each phase will be tested before moving forward. The emulator should remain in a working state at each step.
 
 </details>
-
 
 ## Building & Running
 
@@ -173,6 +185,7 @@ Each phase will be tested before moving forward. The emulator should remain in a
 </details>
 
 #### Installing required tools & libraries:
+
 ```zsh
 # Debian & Debian based:
 sudo apt install build-essential cmake git libsdl2-dev gdb valgrind
@@ -182,6 +195,7 @@ sudo pacman -S base-devel cmake git sdl2 gdb valgrind
 ```
 
 #### Cloning & Building
+
 ```zsh
 git clone https://github.com/LilSuperUser/BareDMG.git
 cd BareDMG
@@ -190,25 +204,39 @@ cmake ..
 make
 ```
 
-#### Running
+#### Running & Options
+
 ```zsh
-./baredmg path/to/rom.gb
+Usage: ./baredmg [options] <path_to_rom>
+
+Modes (mutually exclusive):
+  -i               Info mode (default): load ROM, print header info, then exit
+  -s <num>         Step mode: execute exactly <num> CPU instructions
+  -r               Run mode: execute instructions until timeout or HALT
+
+Other options:
+  -d               Debug mode (verbose CPU state output)
+  -h               Show this help message
 ```
 
 <details>
     <summary><h2>Testing</h2></summary>
 
 The emulator uses two types of testing:
+
 ### 1. Unit Tests (`Check` Framework)
+
 `check` is a unit testing framework for C that lets you write and run tests for individual components.
 
 Tests are located in tests/ and test individual functions and components in isolation:
+
 - `test_utils.c` - tests bit manipulation helpers
 - `test_cartridge.c` - tests ROM parsing
 - `test_cpu.c` - tests CPU instruction execution
 - `test_mmu.c` - tests memory routing logic
 
 Run unit tests:
+
 ```zsh
 mkdir build && cd build
 cmake ..
@@ -219,7 +247,9 @@ ctest
 ```
 
 ### 2. Integration Tests (Test ROMs)
+
 **Test ROMs** are actual Game Boy programs that validate hardware behavior by running on the emulator and **reporting PASS/FAIL results**.
+
 - [Blargg's test ROMs](https://github.com/retrio/gb-test-roms)
     - `cpu_instrs.gb` - Validates all CPU instructions
     - `instr_timing.gb` - Tests instruction cycle accuracy
@@ -232,6 +262,7 @@ Place test ROM in `roms/tests/` and run them through the emulator to verify corr
 </details>
 
 ## Resources
+
 - [Pan Docs](https://gbdev.io/pandocs/)
 - [Game Boy Complete Technical Reference](https://gekkio.fi/files/gb-docs/gbctr.pdf)
 - [Cycle-Accurate Game Boy Docs](https://raw.githubusercontent.com/rockytriton/LLD_gbemu/main/docs/The%20Cycle-Accurate%20Game%20Boy%20Docs.pdf)
@@ -239,7 +270,9 @@ Place test ROM in `roms/tests/` and run them through the emulator to verify corr
 - [Game Boy Programming Manual](https://archive.org/details/GameBoyProgManVer1.1/mode/2up)
 
 ## Contributing
+
 Want to help improve BareDMG? Check out [CONTRIBUTING.md](./CONTRIBUTING.md) for instructions on contributing code, tests, and documentation.
 
 ## License
+
 This project is licensed under the GPL v3 License. You are free to use, modify, and distribute this software under the terms of the [GPL v3 license](./LICENSE)

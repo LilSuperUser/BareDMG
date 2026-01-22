@@ -6,6 +6,9 @@ set(CORE_SOURCES
     cartridge.c
     bus.c
     gbemu.c
+    cpu/cpu.c
+    cpu/cpu_tables.c
+    cpu/cpu_exec.c
     # NOTE: We'll add more as they are written
     # cpu/cpu.c
     # cpu/cpu_decode.c
