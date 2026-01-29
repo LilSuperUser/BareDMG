@@ -16,13 +16,17 @@ u8 instr_nop(CPU *cpu) {
 // NOTE: Full STOP implementation requires joypad
 // therefore, for now we treat it as HALT
 u8 instr_stop(CPU *cpu) {
+    // STOP is a 2-byte instruction: 0x10 0x00
     // Read and discard the next byte (always 0x00)
     mmu_read(cpu->gb, cpu->pc++);
 
-    // Set CPU to stopped state
-    cpu->halted = true; // Use halted flag for now
+    // In a real Game Boy, STOP halts CPU/LCD until button press
+    // For testing/emulation without full power management:
+    // Just treat as a 2-byte NOP and continue execution
 
-    // TODO: When implementing joypad:
+    // cpu->halted = true;  // DON'T halt!
+
+    // TODO: Implement proper STOP behavior when joypad is ready:
     // - Stop CPU clock
     // - Stop LCD display
     // - Wake on button press
@@ -2396,40 +2400,45 @@ u8 instr_jp_nz_a16(CPU *cpu) {
     u8 lo = mmu_read(cpu->gb, cpu->pc++);
     u8 hi = mmu_read(cpu->gb, cpu->pc++);
 
-    if (!cpu_get_flag(cpu, FLAG_ZERO))
+    if (!cpu_get_flag(cpu, FLAG_ZERO)) {
         cpu->pc = MAKE_U16(hi, lo);
+        return 0;
+    }
 
-    return 0;
+    return 12;
 }
 
 u8 instr_jp_z_a16(CPU *cpu) {
     u8 lo = mmu_read(cpu->gb, cpu->pc++);
     u8 hi = mmu_read(cpu->gb, cpu->pc++);
 
-    if (cpu_get_flag(cpu, FLAG_ZERO))
+    if (cpu_get_flag(cpu, FLAG_ZERO)) {
         cpu->pc = MAKE_U16(hi, lo);
-
-    return 0;
+        return 0;
+    }
+    return 12;
 }
 
 u8 instr_jp_nc_a16(CPU *cpu) {
     u8 lo = mmu_read(cpu->gb, cpu->pc++);
     u8 hi = mmu_read(cpu->gb, cpu->pc++);
 
-    if (!cpu_get_flag(cpu, FLAG_CARRY))
+    if (!cpu_get_flag(cpu, FLAG_CARRY)) {
         cpu->pc = MAKE_U16(hi, lo);
-
-    return 0;
+        return 0;
+    }
+    return 12;
 }
 
 u8 instr_jp_c_a16(CPU *cpu) {
     u8 lo = mmu_read(cpu->gb, cpu->pc++);
     u8 hi = mmu_read(cpu->gb, cpu->pc++);
 
-    if (cpu_get_flag(cpu, FLAG_CARRY))
+    if (cpu_get_flag(cpu, FLAG_CARRY)) {
         cpu->pc = MAKE_U16(hi, lo);
-
-    return 0;
+        return 0;
+    }
+    return 12;
 }
 
 // JR e8
@@ -2453,37 +2462,45 @@ u8 instr_jr_e8(CPU *cpu) {
 u8 instr_jr_nz_e8(CPU *cpu) {
     i8 offset = (i8)mmu_read(cpu->gb, cpu->pc++);
 
-    if (!cpu_get_flag(cpu, FLAG_ZERO))
+    if (!cpu_get_flag(cpu, FLAG_ZERO)) {
         cpu->pc += offset;
+        return 0;
+    }
 
-    return 0;
+    return 8;
 }
 
 u8 instr_jr_z_e8(CPU *cpu) {
     i8 offset = (i8)mmu_read(cpu->gb, cpu->pc++);
 
-    if (cpu_get_flag(cpu, FLAG_ZERO))
+    if (cpu_get_flag(cpu, FLAG_ZERO)) {
         cpu->pc += offset;
+        return 0;
+    }
 
-    return 0;
+    return 8;
 }
 
 u8 instr_jr_nc_e8(CPU *cpu) {
     i8 offset = (i8)mmu_read(cpu->gb, cpu->pc++);
 
-    if (!cpu_get_flag(cpu, FLAG_CARRY))
+    if (!cpu_get_flag(cpu, FLAG_CARRY)) {
         cpu->pc += offset;
+        return 0;
+    }
 
-    return 0;
+    return 8;
 }
 
 u8 instr_jr_c_e8(CPU *cpu) {
     i8 offset = (i8)mmu_read(cpu->gb, cpu->pc++);
 
-    if (cpu_get_flag(cpu, FLAG_CARRY))
+    if (cpu_get_flag(cpu, FLAG_CARRY)) {
         cpu->pc += offset;
+        return 0;
+    }
 
-    return 0;
+    return 8;
 }
 
 // JP a16
@@ -2521,11 +2538,13 @@ u8 instr_call_nz_a16(CPU *cpu) {
     if (!cpu_get_flag(cpu, FLAG_ZERO)) {
         cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_HIGH_BYTE(cpu->pc));
+        cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_LOW_BYTE(cpu->pc));
 
         cpu->pc = addr;
+        return 0;
     }
-    return 0;
+    return 12;
 }
 
 u8 instr_call_z_a16(CPU *cpu) {
@@ -2536,11 +2555,13 @@ u8 instr_call_z_a16(CPU *cpu) {
     if (cpu_get_flag(cpu, FLAG_ZERO)) {
         cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_HIGH_BYTE(cpu->pc));
+        cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_LOW_BYTE(cpu->pc));
 
         cpu->pc = addr;
+        return 0;
     }
-    return 0;
+    return 12;
 }
 
 u8 instr_call_nc_a16(CPU *cpu) {
@@ -2551,11 +2572,13 @@ u8 instr_call_nc_a16(CPU *cpu) {
     if (!cpu_get_flag(cpu, FLAG_CARRY)) {
         cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_HIGH_BYTE(cpu->pc));
+        cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_LOW_BYTE(cpu->pc));
 
         cpu->pc = addr;
+        return 0;
     }
-    return 0;
+    return 12;
 }
 
 u8 instr_call_c_a16(CPU *cpu) {
@@ -2566,11 +2589,13 @@ u8 instr_call_c_a16(CPU *cpu) {
     if (cpu_get_flag(cpu, FLAG_CARRY)) {
         cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_HIGH_BYTE(cpu->pc));
+        cpu->sp--;
         mmu_write(cpu->gb, cpu->sp, GET_LOW_BYTE(cpu->pc));
 
         cpu->pc = addr;
+        return 0;
     }
-    return 0;
+    return 12;
 }
 
 // RET
@@ -2598,8 +2623,9 @@ u8 instr_ret_nz(CPU *cpu) {
         u8 lo   = mmu_read(cpu->gb, cpu->sp++);
         u8 hi   = mmu_read(cpu->gb, cpu->sp++);
         cpu->pc = MAKE_U16(hi, lo);
+        return 0;
     }
-    return 0;
+    return 8;
 }
 
 u8 instr_ret_z(CPU *cpu) {
@@ -2607,8 +2633,9 @@ u8 instr_ret_z(CPU *cpu) {
         u8 lo   = mmu_read(cpu->gb, cpu->sp++);
         u8 hi   = mmu_read(cpu->gb, cpu->sp++);
         cpu->pc = MAKE_U16(hi, lo);
+        return 0;
     }
-    return 0;
+    return 8;
 }
 
 u8 instr_ret_nc(CPU *cpu) {
@@ -2616,8 +2643,9 @@ u8 instr_ret_nc(CPU *cpu) {
         u8 lo   = mmu_read(cpu->gb, cpu->sp++);
         u8 hi   = mmu_read(cpu->gb, cpu->sp++);
         cpu->pc = MAKE_U16(hi, lo);
+        return 0;
     }
-    return 0;
+    return 8;
 }
 
 u8 instr_ret_c(CPU *cpu) {
@@ -2625,8 +2653,9 @@ u8 instr_ret_c(CPU *cpu) {
         u8 lo   = mmu_read(cpu->gb, cpu->sp++);
         u8 hi   = mmu_read(cpu->gb, cpu->sp++);
         cpu->pc = MAKE_U16(hi, lo);
+        return 0;
     }
-    return 0;
+    return 8;
 }
 
 // Return from subroutine & enable interrupts

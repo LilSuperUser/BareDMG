@@ -371,11 +371,11 @@ static const u8 instr_cycles[256] = {
     [0xC1] = 12,
     [0xC2] = 16, // NOTE: 12 if Z flag is set
     [0xC3] = 16,
-    [0xC4] = 24, // NOTE: 12 if C not set
+    [0xC4] = 24, // NOTE: 12 if Z set
     [0xC5] = 16,      [0xC6] = 8,       [0xC7] = 16,
-    [0xC8] = 20, // NOTE: 8 if Z flag is set
+    [0xC8] = 20, // NOTE: 8 if Z flag not set
     [0xC9] = 16,
-    [0xCA] = 16, // NOTE: 12 if Z is set
+    [0xCA] = 16, // NOTE: 12 if Z is not set
     [0xCB] = 4,
     [0xCC] = 24, // NOTE: 12 if Z is not set
     [0xCD] = 24,      [0xCE] = 8,       [0xCF] = 16,
@@ -415,9 +415,15 @@ u8 cpu_execute(CPU *cpu, u8 opcode) {
         return ILLEGAL;
     }
 
-    // Otherwise, call the instruction handler
-    instr_table[opcode](cpu);
+    // If the returned val is not 0
+    // Cycle count is returned
+    u8 cycle_count = instr_table[opcode](cpu);
+    if (!cycle_count) {
+        return cycle_count;
+    }
 
-    // Return cycle count for the opcode
+    // Otherwise, use the val from the table above
     return instr_cycles[opcode];
+
+    // TODO: Might remove the table above and keep return cycle count from functions
 }
