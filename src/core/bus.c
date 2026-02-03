@@ -214,6 +214,10 @@ void mmu_write(GameBoy *gb, u16 addr, u8 value) {
 
 // I/O Register handlers
 u8 io_read(GameBoy *gb, u16 addr) {
+    // Sound (NOTE: stubbed)
+    if (addr >= 0xFF10 && addr <= 0xFF26) {
+        return gb->io.sound[addr - 0xFF10];
+    }
     switch (addr) {
         // Joypad
         case 0xFF00:
@@ -238,10 +242,6 @@ u8 io_read(GameBoy *gb, u16 addr) {
         // Interrupt Flag (upper 3 bits always 1)
         case 0xFF0F:
             return gb->io.if_reg | 0xE0;
-
-        // Sound (NOTE: stubbed)
-        case 0xFF10 ... 0xFF26:
-            return gb->io.sound[addr - 0xFF10];
 
         // LCD
         case 0xFF40:
@@ -280,6 +280,12 @@ u8 io_read(GameBoy *gb, u16 addr) {
 }
 
 void io_write(GameBoy *gb, u16 addr, u8 value) {
+    // Sound (NOTE: stubbed)
+    if (addr >= 0xFF10 && addr <= 0xFF26) {
+        gb->io.sound[addr - 0xFF10] = value;
+        return;
+    }
+
     switch (addr) {
         // Joypad (bits 4-5 writable)
         case 0xFF00:
@@ -317,11 +323,6 @@ void io_write(GameBoy *gb, u16 addr, u8 value) {
         // Interrupt Flag (only lower 5 bits writable)
         case 0xFF0F:
             gb->io.if_reg = MASK_BITS(value, 0x1F);
-            break;
-
-        // Sound (NOTE: stubbed)
-        case 0xFF10 ... 0xFF26:
-            gb->io.sound[addr - 0xFF10] = value;
             break;
 
         // LCD
