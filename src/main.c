@@ -9,6 +9,16 @@
 
 #define RUN_DEBUG_INTERVAL 1000
 
+// Config structure for CLI args
+typedef enum { MODE_INFO, MODE_STEP, MODE_RUN, MODE_TEST } EmulatorMode;
+
+typedef struct {
+    const char  *rom_path;
+    EmulatorMode mode;
+    int          step_count;
+    bool         debug_mode;
+} CliConfig;
+
 // Print the usage information
 static void print_usage(const char *program_name) {
     printf("Usage: %s [options] <path_to_rom>\n", program_name);
@@ -62,7 +72,7 @@ static void test_serial_output(void) {
     printf("\n=== Serial Test Complete ===\n\n");
 }
 
-// print the CPU state
+// Print the CPU state
 static void print_cpu_state(GameBoy *gb) {
     printf("\nFinal state:\n");
     printf("  PC = 0x%04X\n", gb->cpu.pc);
