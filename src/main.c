@@ -34,6 +34,121 @@ static void print_usage(const char *program_name) {
     printf("  -h               Show this help message\n");
 }
 
+// Helper function to parse command line arguments into CliConfig
+static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
+    // Initialize defaults
+    config->rom_path   = NULL;
+    config->mode       = MODE_INFO; // Default mode
+    config->step_count = 0;
+    config->debug_mode = false;
+
+    if (argc < 2) {
+        fprintf(stderr, "Error: No ROM file specified\n\n");
+        print_usage(argv[0]);
+        return false;
+    }
+    bool mode_specified = false;
+
+    // Parse arguments
+    for (int i = 1; i < argc; i++) {
+
+        // Detect a flag
+        if (argv[i][0] == '-') {
+
+            // Help mode
+            if (strcmp(argv[i], "-h") == 0) {
+                print_usage(argv[0]);
+                exit(0);
+            }
+
+            // Run mode
+            else if (strcmp(argv[i], "-r") == 0) {
+                if (config->step_count > 0) {
+                    fprintf(stderr, "Error: -r and -s cannot be used together\n");
+                    return false;
+                }
+                config->mode   = MODE_RUN;
+                mode_specified = true;
+            }
+
+            // Step mode
+            else if (strcmp(argv[i], "-s") == 0) {
+                if (config->mode == MODE_RUN) {
+                    fprintf(stderr, "Error: -s and -r cannot be used together\n");
+                    return false;
+                }
+                if (i + 1 >= argc) {
+                    fprintf(stderr, "Error: -s requires a number\n");
+                    return false;
+                }
+                config->step_count = atoi(argv[++i]);
+                if (config->step_count <= 0) {
+                    fprintf(stderr, "Error: Invalid step count\n");
+                    return false;
+                }
+                config->mode   = MODE_STEP;
+                mode_specified = true;
+            }
+
+            // Info mode
+            else if (strcmp(argv[i], "-i") == 0) {
+                config->mode   = MODE_INFO;
+                mode_specified = true;
+            }
+
+            // Debug mode
+            else if (strcmp(argv[i], "-d") == 0) {
+                config->debug_mode = true;
+            }
+
+            // Test mode
+            else if (strcmp(argv[i], "-t") == 0) {
+                if (config->step_count > 0 || config->mode == MODE_RUN) {
+                    fprintf(stderr, "Error: -t cannot be used with -s or -r\n");
+                    return false;
+                }
+                config->mode   = MODE_TEST;
+                mode_specified = true;
+            }
+
+            else {
+                fprintf(stderr, "Unknown option: %s\n", argv[i]);
+                print_usage(argv[0]);
+                return false;
+            }
+        }
+
+        // Not a flag (ROM file)
+        else {
+            if (config->rom_path != NULL) {
+                fprintf(stderr, "Error: Multiple ROM files specified\n");
+                return false;
+            }
+            config->rom_path = argv[i];
+        }
+    }
+
+    // Check if the ROM file was provided
+    if (!config->rom_path) {
+        fprintf(stderr, "Error: No ROM file specified\n\n");
+        print_usage(argv[0]);
+        return false;
+    }
+
+    // Default to info mode if no mode specified
+    if (!mode_specified) {
+        config->mode = MODE_INFO;
+        printf("No mode specified; defaulting to info mode (-i)\n\n");
+    }
+
+    // Warn if info & debug mode both used
+    if (config->mode == MODE_INFO && config->debug_mode) {
+        printf("Note: debug mode (-d) has no effect in info mode\n\n");
+    }
+
+    return true;
+}
+
 // NOTE: Test function to test the serial output
 // Working as of now
 static void test_serial_output(void) {
