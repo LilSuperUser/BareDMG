@@ -77,6 +77,10 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
                     fprintf(stderr, "Error: -s and -r cannot be used together\n");
                     return false;
                 }
+                if (config->mode == MODE_TEST) {
+                    fprintf(stderr, "Error: -s and -t cannot be used together\n");
+                    return false;
+                }
                 if (i + 1 >= argc) {
                     fprintf(stderr, "Error: -s requires a number\n");
                     return false;
