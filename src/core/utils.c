@@ -1,5 +1,7 @@
 // src/core/utils.c
 #include <core/utils.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 // Swap endianness
 u16 swap_bytes(u16 val) {
@@ -85,4 +87,61 @@ u8 adjust_bcd(u8 value, bool subtract, bool carry, bool half_carry) {
 // Extend 8-bit signed to 16-bit
 i16 sign_extend_i8(u8 val) {
     return (val & 0x80) ? (i16)(val | 0xFF00) : (i16)val;
+}
+
+// ---------------------------------------------
+// Logger functions
+// ---------------------------------------------
+static void log_message(FILE *stream, const char *color, const char *prefix, const char *format,
+                        va_list args) {
+    fprintf(stream, "%s%s[%s]: ", RESET, color, prefix);
+    vfprintf(stream, format, args);
+    fprintf(stream, "%s", RESET);
+}
+
+void put_error(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stderr, RED, "ERROR", format, args);
+    va_end(args);
+}
+
+void put_warning(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stderr, YELLOW, "WARN", format, args);
+    va_end(args);
+}
+
+void put_success(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stdout, GREEN, "OK", format, args);
+    va_end(args);
+}
+
+void put_info(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stdout, CYAN, "INFO", format, args);
+    va_end(args);
+}
+
+void put_debug(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stdout, BLUE, "DEBUG", format, args);
+    va_end(args);
+}
+
+void put_emulator(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stdout, MAGENTA, "EMU", format, args);
+    va_end(args);
+}
+
+void put_bold(const char *msg) {
+    printf("%s%s%s", RESET, BOLD_WHITE, msg);
+    printf("%s", RESET);
 }
