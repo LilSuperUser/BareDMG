@@ -19,6 +19,29 @@ typedef int32_t  i32;
 typedef int64_t  i64;
 
 // ---------------------------------------------
+// ANSI Colors
+// ---------------------------------------------
+#define RED "\033[91m"          // Errors
+#define YELLOW "\033[93m"       // Warnings
+#define GREEN "\033[92m"        // Success
+#define CYAN "\033[96m"         // Information
+#define BLUE "\033[94m"         // Debug
+#define MAGENTA "\033[95m"      // Emulator-specific
+#define BOLD_WHITE "\033[1;97m" // Bold white
+#define RESET "\033[0m"
+
+// ---------------------------------------------
+// Logger functions
+// ---------------------------------------------
+void put_error(const char *format, ...);
+void put_warning(const char *format, ...);
+void put_success(const char *format, ...);
+void put_info(const char *format, ...);
+void put_debug(const char *format, ...);
+void put_emulator(const char *format, ...);
+void put_bold(const char *msg);
+
+// ---------------------------------------------
 // Bit Manipulation Macros (simple, inline)
 // ---------------------------------------------
 
