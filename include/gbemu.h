@@ -6,6 +6,14 @@
 #include <core/cartridge.h>
 #include <core/utils.h>
 
+// Tunables for the run-mode drivers
+#define GB_RUN_MAX_ITERATIONS 100000    // -r mode: iteration cap
+#define GB_RUN_DEBUG_INTERVAL 1000      // -r mode: debug print cadence
+#define GB_TEST_MAX_CYCLES 100000000ULL // -t mode: ~24s cycle budget
+#define GB_TEST_STUCK_LIMIT 10000       // -t mode: consecutive same-PC steps before declaring stuck
+#define GB_TEST_TRACE_CYCLES 500        // -t mode: print full trace for the first N cycles
+#define GB_TEST_DEBUG_INTERVAL 10000    // -t mode: debug print cadence (in cycles)
+
 // ---------------------------------------------
 // Hardware Registers
 // https://gbdev.io/pandocs/Hardware_Reg_List.html
