@@ -86,9 +86,38 @@ void gb_step(GameBoy *gb);
 void gb_run_frame(GameBoy *gb);
 
 // ---------------------------------------------
+// Run-mode results
+// ---------------------------------------------
+//  Outcome of one of the gb_run_* loops below
+//  Every gb_run_* function already prints its own diagnostics before returning this
+//  main.c just maps the status to an exit code
+typedef enum {
+    GB_RUN_OK,      // Loop completed its budget (step count)
+    GB_RUN_HALTED,  // CPU executed HALT
+    GB_RUN_STUCK,   // PC stopped advancing (bug in the ROM or the core)
+    GB_RUN_TIMEOUT, // Budget exceeded without halting
+} GbRunStatus;
+
+// ---------------------------------------------
+// Main-loop drivers (one per CLI mode)
+// ---------------------------------------------
+// Execute exactly `step_count` instructions (used by `-s <num>`)
+// Prints state per-instruction if debug_mode is set
+GbRunStatus gb_run_step(GameBoy *gb, int step_count, bool debug_mode);
+
+// Execute until HALT or an internal iteration cap (used by `-r`)
+GbRunStatus gb_run_continuous(GameBoy *gb, bool debug_mode);
+
+// Execute until HALT / cycle budget reached / PC gets stuck (used by `-t`)
+GbRunStatus gb_run_test(GameBoy *gb, bool debug_mode);
+
+// Dump PC/SP/register pairs/flags/cycle count (for debugging)
+void        gb_print_state(GameBoy *gb);
+
+// ---------------------------------------------
 // I/O Handlers (called by MMU)
 // ---------------------------------------------
-u8   io_read(GameBoy *gb, u16 addr);
-void io_write(GameBoy *gb, u16 addr, u8 value);
+u8          io_read(GameBoy *gb, u16 addr);
+void        io_write(GameBoy *gb, u16 addr, u8 value);
 
 #endif // !GBEMU_H
