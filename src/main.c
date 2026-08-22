@@ -224,15 +224,8 @@ int main(int argc, char *argv[]) {
     // Initialize Game Boy and load ROM
     GameBoy gb;
     gb_init(&gb);
-    gb_load_rom(&gb, config.rom_path);
-
-    // TODO: Make gb_load_rom return a bool
-    // check if either gb.running or returned value is false
-    // if it is, failed to load ROM
-    /* if (!gb.running) { */
-    /*     fprintf(stderr, "Failed to load ROM\n"); */
-    /*     return 1; */
-    /* } */
+    if (!gb_load_rom(&gb, config.rom_path))
+        return 1;
 
     // Dispatch to the driver for the selected mode
     // Each gb_run_* function owns its own loop, diagnostics, and halt/stuck/timeout detection
@@ -241,9 +234,7 @@ int main(int argc, char *argv[]) {
 
     switch (config.mode) {
         case MODE_INFO:
-            // Nothing to do
-            // gb_load_rom already prints the header
-            // TODO: Make a gb_print_cart_info() which calls cart_print_header(&gb->cart.header);
+            gb_print_cart_info(&gb);
             break;
 
         case MODE_STEP:

@@ -38,27 +38,24 @@ void gb_init(GameBoy *gb) {
 
     gb->io.boot     = 0x00;
     put_success("I/O registers initialized successfully!\n\n");
+    gb->running = true;
 }
 
 // Load a cartridge into GameBoy
 // TODO: Remove the call to cart_print_header
 // Create a proper gb_print_cart_info() to print header when info mode is set
-void gb_load_rom(GameBoy *gb, const char *path) {
+bool gb_load_rom(GameBoy *gb, const char *path) {
     // Try to load the cartridge
-    // TODO: Might print details about the error (using error codes)
     put_emulator("Loading ROM...\n");
+
+    // TODO: Might print details about the error (using error codes)
     if (cart_load(&gb->cart, path) != 0) {
         put_error("Failed to load ROM!\n");
         gb->running = false;
-        return;
+        return false;
     }
 
-    put_emulator("Printing cartridge information below...\n\n");
-    cart_print_header(&gb->cart.header);
-
-    // FIX: CPU is already reset by gb_init()
-    /* cpu_reset(&gb->cpu); */
-    gb->running = true;
+    return true;
 }
 
 // Execute a single CPU instruction step
@@ -116,6 +113,12 @@ void gb_print_state(GameBoy *gb) {
            cpu_get_flag(&gb->cpu, FLAG_SUBT), cpu_get_flag(&gb->cpu, FLAG_HF_CARRY),
            cpu_get_flag(&gb->cpu, FLAG_CARRY));
     printf("  Total cycles: %llu\n\n", (unsigned long long)gb->cycles);
+}
+
+// Print cartridge information to stdout
+void gb_print_cart_info(GameBoy *gb) {
+    put_emulator("Printing cartridge information below...\n\n");
+    cart_print_header(&gb->cart.header);
 }
 
 // Execute exactly `step_count` instructions (-s <num>)

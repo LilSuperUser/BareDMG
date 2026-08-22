@@ -89,7 +89,7 @@ typedef struct GameBoy {
 // Emulator Functions
 // ---------------------------------------------
 void gb_init(GameBoy *gb);
-void gb_load_rom(GameBoy *gb, const char *path);
+bool gb_load_rom(GameBoy *gb, const char *path);
 void gb_step(GameBoy *gb);
 void gb_run_frame(GameBoy *gb);
 
@@ -121,6 +121,8 @@ GbRunStatus gb_run_test(GameBoy *gb, bool debug_mode);
 
 // Dump PC/SP/register pairs/flags/cycle count (for debugging)
 void        gb_print_state(GameBoy *gb);
+
+void        gb_print_cart_info(GameBoy *gb);
 
 // ---------------------------------------------
 // I/O Handlers (called by MMU)
