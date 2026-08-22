@@ -21,17 +21,21 @@ typedef struct {
 
 // Print the usage information
 static void print_usage(const char *program_name) {
-    printf("Usage: %s [options] <path_to_rom>\n", program_name);
-    printf("\n");
-    printf("Modes (mutually exclusive):\n");
-    printf("  -i               Info mode (default): load ROM, print header info, then exit\n");
-    printf("  -s <num>         Step mode: execute exactly <num> CPU instructions\n");
-    printf("  -r               Run mode: execute instructions until timeout or HALT\n");
-    printf("\n");
-    printf("Other options:\n");
-    printf("  -d               Debug mode (verbose CPU state output)\n");
-    printf("  -t               Test mode: run ROM until completion (for test ROMs)\n");
-    printf("  -h               Show this help message\n");
+    printf("%sUsage:%s %s [options] <path_to_rom>\n", BOLD_WHITE, RESET, program_name);
+
+    printf("\n%sModes (mutually exclusive):%s\n", BOLD_WHITE, RESET);
+    printf("  %s-i%s               Info mode (default): load ROM, print header info, then exit\n",
+           CYAN, RESET);
+    printf("  %s-s <num>%s         Step mode: execute exactly <num> CPU instructions\n", CYAN,
+           RESET);
+    printf("  %s-r%s               Run mode: execute instructions until timeout or HALT\n", CYAN,
+           RESET);
+
+    printf("\n%sOther options:%s\n", BOLD_WHITE, RESET);
+    printf("  %s-d%s               Debug mode (verbose CPU state output)\n", CYAN, RESET);
+    printf("  %s-t%s               Test mode: run ROM until completion (for test ROMs)\n", CYAN,
+           RESET);
+    printf("  %s-h%s               Show this help message\n", CYAN, RESET);
 }
 
 // Helper function to parse command line arguments into CliConfig
@@ -222,10 +226,13 @@ int main(int argc, char *argv[]) {
     gb_init(&gb);
     gb_load_rom(&gb, config.rom_path);
 
-    if (!gb.running) {
-        fprintf(stderr, "Failed to load ROM\n");
-        return 1;
-    }
+    // TODO: Make gb_load_rom return a bool
+    // check if either gb.running or returned value is false
+    // if it is, failed to load ROM
+    /* if (!gb.running) { */
+    /*     fprintf(stderr, "Failed to load ROM\n"); */
+    /*     return 1; */
+    /* } */
 
     // Dispatch to the driver for the selected mode
     // Each gb_run_* function owns its own loop, diagnostics, and halt/stuck/timeout detection
@@ -236,6 +243,7 @@ int main(int argc, char *argv[]) {
         case MODE_INFO:
             // Nothing to do
             // gb_load_rom already prints the header
+            // TODO: Make a gb_print_cart_info() which calls cart_print_header(&gb->cart.header);
             break;
 
         case MODE_STEP:
@@ -251,8 +259,9 @@ int main(int argc, char *argv[]) {
             break;
     }
 
+    put_emulator("Unloading cartridge...\n");
     cart_unload(&gb.cart);
-    puts("\nExiting...\n");
+    put_emulator("Exiting...\n");
 
     return status_to_exit_code(status);
 }

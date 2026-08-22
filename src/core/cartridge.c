@@ -19,7 +19,7 @@ int cart_load(Cartridge *cart, const char *path) {
     // Open the ROM file
     FILE *rom_f = fopen(path, "rb");
     if (!rom_f) {
-        fprintf(stderr, "Failed to open ROM: %s\n", path);
+        put_error("Failed to open ROM: %s\n", path);
         return 1;
     }
 
@@ -31,54 +31,64 @@ int cart_load(Cartridge *cart, const char *path) {
     // Actual ROM file size should be greater than 0x0150
     if (cart->rom_size < 0x0150) {
         fclose(rom_f);
-        fprintf(stderr, "ROM file too small\n");
+        put_error("ROM file too small!\n");
         return 2;
     }
 
-    // Allocate memory for ROM from heap
+    // Allocate memory for ROM on the heap
     cart->rom = malloc(cart->rom_size);
     if (!cart->rom) {
         fclose(rom_f);
-        fprintf(stderr, "Failed to allocate ROM memory\n");
+        put_error("Failed to allocate memory for ROM!\n");
         return 3;
     }
+    put_success("ROM Memory allocated successfully!\n");
 
     // Read the ROM data from file into ROM buffer
+    put_emulator("Reading ROM data into ROM buffer...\n");
     size_t read = fread(cart->rom, 1, cart->rom_size, rom_f);
     fclose(rom_f);
 
     if (read != cart->rom_size) {
-        fprintf(stderr, "Failed to read ROM\n");
+        put_error("Failed to read ROM\n");
         return 5;
     }
 
-    printf("ROM Loaded Successfully!\n");
+    put_success("ROM loaded successfully!\n\n");
 
     // Copy raw header (located at 0x100 - 0x14F)
     memcpy(&cart->raw_header, cart->rom + 0x0100, sizeof(RawRomHeader));
 
     // Parse the header into usable format
+    put_emulator("Parsing cartridge header...\n");
     parse_header(&cart->raw_header, &cart->header);
+    put_success("Cartridge header parsed successfully!\n\n");
 
     // Verify the header checksum
+    put_emulator("Verifying the header checksum...\n");
     if (!cart_verify_header_checksum(cart)) {
-        fprintf(stderr, "Error: Invalid cartridge header checksum\n");
+        put_error("Invalid cartridge header checksum!\n");
+        put_emulator("Unloading cartridge...\n");
         cart_unload(cart);
         return -1;
     }
-    printf("\nCartridge header checksum: OK\n");
+    put_success("Cartridge header checksum valid!\n\n");
 
     // Allocate RAM if needed (based on ram_size_code)
     cart->ram_size = get_ram_size(cart->header.ram_size_code);
+
     if (cart->ram_size > 0) {
+        put_emulator("Allocating cartridge RAM...\n");
+
         cart->ram = calloc(1, cart->ram_size);
         if (!cart->ram) {
-            fprintf(stderr, "Failed to allocate cartridge RAM\n");
+            put_error("Failed to allocate cartridge RAM!\n");
             free(cart->rom);
             cart->rom      = NULL;
             cart->rom_size = 0;
             return 4;
         }
+        put_success("Cartridge RAM allocated successfully!\n\n");
     }
     else {
         cart->ram = NULL;
@@ -148,9 +158,9 @@ void cart_print_header(const CartHeader *hdr) {
     bool        is_old_code = (hdr->lic_code <= 0xFF);
     const char *publisher   = get_publisher_name(hdr->lic_code, is_old_code);
 
-    printf("================================\n");
-    printf("    Cartridge Information\n");
-    printf("================================\n");
+    put_bold("================================\n");
+    put_bold("    Cartridge Information\n");
+    put_bold("================================\n");
 
     printf("Title:         %s\n", hdr->title);
     printf("Publisher:     %s (0x%04X)\n", publisher, hdr->lic_code);
@@ -168,7 +178,7 @@ void cart_print_header(const CartHeader *hdr) {
 
     printf("SGB Support:   %s\n", hdr->sgb_supported ? "Yes" : "No");
     printf("CGB Support:   %s\n", hdr->cgb_supported ? "Yes" : "No");
-    printf("================================\n");
+    put_bold("================================\n\n");
 }
 
 // Get RAM size in bytes from RAM size code
@@ -188,7 +198,7 @@ size_t get_ram_size(u8 ram_size_code) {
         case 0x05:
             return 64 * 1024; // 64 KB (8 banks of 8KB)
         default:
-            fprintf(stderr, "Unknown RAM size code: 0x%02X\n", ram_size_code);
+            put_error("Unknwon RAM size code: 0x%02x\n", ram_size_code);
             return 0;
     }
 }
@@ -216,7 +226,7 @@ size_t get_rom_size(u8 rom_size_code) {
         case 0x54:
             return 96 * 16 * 1024; // 1.5 MB
         default:
-            fprintf(stderr, "Unknown ROM size code: 0x%02X\n", rom_size_code);
+            put_error("Unknown ROM size code: 0x%02X\n", rom_size_code);
             return 0;
     }
 }

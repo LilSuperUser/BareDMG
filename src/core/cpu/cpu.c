@@ -14,6 +14,7 @@ void cpu_init(CPU *cpu, GameBoy *gb) {
 void cpu_reset(CPU *cpu) {
     // Game Boy boot sequence sets these initial values
     // https://gbdev.io/pandocs/Power_Up_Sequence.html
+    put_emulator("Resetting CPU...\n");
     cpu->regs.a = 0x01; // GB/SGB identifier
     cpu->regs.f = 0xB0; // Flags: Z = 1, N = 0, H = 1, C = 1
     cpu->regs.b = 0x00;
@@ -28,6 +29,7 @@ void cpu_reset(CPU *cpu) {
 
     cpu->ime    = false;
     cpu->halted = false;
+    put_success("CPU reset successfully\n\n");
 }
 
 // Register Pair Read Functions
@@ -86,7 +88,7 @@ u8 cpu_step(CPU *cpu) {
     if (cpu->halted) {
         // TODO: Check for interrupts here
         // If interrupt pending, unhalt
-        puts("This shit is halted");
+        put_warning("CPU halted!\n");
         return 4;
     }
 
