@@ -306,7 +306,7 @@ static const InstrFunc instr_table[256] = {
 u8 cpu_execute(CPU *cpu, u8 opcode) {
     // Check if instruction is implemented
     if (instr_table[opcode] == NULL) {
-        fprintf(stderr, "Illegal Operation Code: 0x%02x at PC = 0x%04x\n", opcode, cpu->pc - 1);
+        put_error("Illegal operation code: 0x%02x at PC = 0x%04x\n", opcode, cpu->pc - 1);
         return ILLEGAL;
     }
     return instr_table[opcode](cpu);

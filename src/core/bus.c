@@ -378,14 +378,14 @@ void io_write(GameBoy *gb, u16 addr, u8 value) {
 
 // Debug Helper: Dump Memory Region
 void mmu_dump_region(GameBoy *gb, u16 start, u16 end) {
-    printf("Memory Dump [0x%04x - 0x%04x]:\n", start, end);
+    printf("%sMemory Dump%s ", BOLD_WHITE, RESET);
+    printf("[0x%04X - 0x%04X]:\n", start, end);
 
     for (u16 addr = start; addr <= end; addr += 16) {
-        printf("0x%04x: ", addr);
+        printf("%s0x%04X:%s ", CYAN, addr, RESET);
 
-        // Print B in hex
-        for (int i = 0; i < 16 && (addr + 1) <= end; i++) {
-            printf("%02x ", mmu_read(gb, addr + 1));
+        for (int i = 0; i < 16 && (addr + i) <= end; i++) {
+            printf("%02X ", mmu_read(gb, addr + i));
         }
 
         printf("\n");
