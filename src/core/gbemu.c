@@ -173,6 +173,8 @@ GbRunStatus gb_run_continuous(GameBoy *gb, bool debug_mode) {
         put_warning("No PPU/APU yet; this will only execute CPU instructions.\n\n");
     }
 
+    GbRunStatus status = GB_RUN_OK;
+
     for (int i = 0; i < GB_RUN_MAX_ITERATIONS && gb->running && !gb->cpu.halted; i++) {
         gb_step(gb);
 
@@ -183,13 +185,19 @@ GbRunStatus gb_run_continuous(GameBoy *gb, bool debug_mode) {
         }
     }
 
+    if (gb->cpu.halted) {
+        status = GB_RUN_HALTED;
+    }
+    else if (gb->running) {
+        put_error("Emulation timed out after %d iterations\n", GB_RUN_MAX_ITERATIONS);
+        status = GB_RUN_TIMEOUT;
+    }
+
     puts("");
     put_info("Emulation finished!\n");
     gb_print_state(gb);
 
-    // BUG: if GB_RUN_MAX_ITERATIONS is reached, we still reutrn GB_RUN_OK
-    // This behavior needs to be changed
-    return gb->cpu.halted ? GB_RUN_HALTED : GB_RUN_OK;
+    return status;
 }
 
 // Execute until HALT / cycle budget reached / PC gets stuck (used by `-t`)
