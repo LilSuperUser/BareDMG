@@ -35,6 +35,7 @@ static void print_usage(const char *program_name) {
 }
 
 // Helper function to parse command line arguments into CliConfig
+// NOTE: Might have to migrate to cargs library in near future
 static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
     // Initialize defaults
     config->rom_path   = NULL;
@@ -43,8 +44,7 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
     config->debug_mode = false;
 
     if (argc < 2) {
-        fprintf(stderr, "Error: No ROM file specified\n\n");
-        print_usage(argv[0]);
+        put_error("No ROM file specified\n\n");
         return false;
     }
     bool mode_specified = false;
@@ -64,7 +64,7 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
             // Run mode
             else if (strcmp(argv[i], "-r") == 0) {
                 if (config->step_count > 0) {
-                    fprintf(stderr, "Error: -r and -s cannot be used together\n");
+                    put_error("-r and -s cannot be used together\n\n");
                     return false;
                 }
                 config->mode   = MODE_RUN;
@@ -74,20 +74,20 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
             // Step mode
             else if (strcmp(argv[i], "-s") == 0) {
                 if (config->mode == MODE_RUN) {
-                    fprintf(stderr, "Error: -s and -r cannot be used together\n");
+                    put_error("-s and -r cannot be used together\n\n");
                     return false;
                 }
                 if (config->mode == MODE_TEST) {
-                    fprintf(stderr, "Error: -s and -t cannot be used together\n");
+                    put_error("-s and -t cannot be used together\n\n");
                     return false;
                 }
                 if (i + 1 >= argc) {
-                    fprintf(stderr, "Error: -s requires a number\n");
+                    put_error("-s requires a number\n\n");
                     return false;
                 }
                 config->step_count = atoi(argv[++i]);
                 if (config->step_count <= 0) {
-                    fprintf(stderr, "Error: Invalid step count\n");
+                    put_error("Invalid step count\n\n");
                     return false;
                 }
                 config->mode   = MODE_STEP;
@@ -108,7 +108,7 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
             // Test mode
             else if (strcmp(argv[i], "-t") == 0) {
                 if (config->step_count > 0 || config->mode == MODE_RUN) {
-                    fprintf(stderr, "Error: -t cannot be used with -s or -r\n");
+                    put_error("-t cannot be used with -s or -r\n\n");
                     return false;
                 }
                 config->mode   = MODE_TEST;
@@ -116,8 +116,7 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
             }
 
             else {
-                fprintf(stderr, "Unknown option: %s\n", argv[i]);
-                print_usage(argv[0]);
+                put_error("Unknown option: %s\n\n", argv[i]);
                 return false;
             }
         }
@@ -125,7 +124,7 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
         // Not a flag (ROM file)
         else {
             if (config->rom_path != NULL) {
-                fprintf(stderr, "Error: Multiple ROM files specified\n");
+                put_error("Multiple ROM file specified\n\n");
                 return false;
             }
             config->rom_path = argv[i];
@@ -134,20 +133,19 @@ static bool parse_cli_args(int argc, char *argv[], CliConfig *config) {
 
     // Check if the ROM file was provided
     if (!config->rom_path) {
-        fprintf(stderr, "Error: No ROM file specified\n\n");
-        print_usage(argv[0]);
+        put_error("Error: No ROM file specified\n\n");
         return false;
     }
 
     // Default to info mode if no mode specified
     if (!mode_specified) {
         config->mode = MODE_INFO;
-        printf("No mode specified; defaulting to info mode (-i)\n\n");
+        put_info("No mode specified; defaulting to info mode (-i)\n\n");
     }
 
     // Warn if info & debug mode both used
     if (config->mode == MODE_INFO && config->debug_mode) {
-        printf("Note: debug mode (-d) has no effect in info mode\n\n");
+        put_warning("debug mode (-d) has no effect in info mode\n\n");
     }
 
     return true;
@@ -207,14 +205,15 @@ static int status_to_exit_code(GbRunStatus status) {
 
 int main(int argc, char *argv[]) {
     // Print banner
-    printf("=================================\n");
-    printf("          BareDMG\n");
-    printf("    Game Boy Emulator (DMG-01)\n");
-    printf("=================================\n\n");
+    put_bold("─────────────────────────────────\n");
+    put_bold("          BareDMG\n");
+    put_bold("    Game Boy Emulator (DMG-01)\n");
+    put_bold("─────────────────────────────────\n\n");
 
     // Parse CLI args
     CliConfig config;
     if (!parse_cli_args(argc, argv, &config)) {
+        print_usage(argv[0]);
         return 1;
     }
 
