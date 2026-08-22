@@ -52,6 +52,8 @@ int cart_load(Cartridge *cart, const char *path) {
         return 5;
     }
 
+    printf("ROM Loaded Successfully!\n");
+
     // Copy raw header (located at 0x100 - 0x14F)
     memcpy(&cart->raw_header, cart->rom + 0x0100, sizeof(RawRomHeader));
 

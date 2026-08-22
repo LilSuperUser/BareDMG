@@ -228,10 +228,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // BUG: gb_load_rom() prints the header and then this success message is printed
-    // This should be printed first and then the header should be printed
-    printf("ROM Loaded Successfully!\n");
-
     // Dispatch to the driver for the selected mode
     // Each gb_run_* function owns its own loop, diagnostics, and halt/stuck/timeout detection
     // main() will just pick which one to invoke and what to do with the result
