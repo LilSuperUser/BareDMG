@@ -38,11 +38,21 @@ typedef struct GameBoy {
     Timer timer;
     Joypad joypad;
     Cartridge cart;
-    MMU mmu;
 
-    uint64_t cycles;
-    bool running;
-}
+    u8          vram[0x2000];
+    u8          wram[0x2000];
+    u8          oam[0xA0];
+    u8          hram[0x7F];
+
+    IORegisters io;
+    u8          ie_register;
+
+    u8          serial_data;
+    u16         serial_cycles;
+
+    u64         cycles;
+    bool        running;
+} GameBoy
 ```
 
 Every subsystem recieves a pointer to the emulator context (or the specific subcomponents if needed).
@@ -50,29 +60,19 @@ Every subsystem recieves a pointer to the emulator context (or the specific subc
 <details>
     <summary><h2>Project Structure</h2></summary>
 
-```
-BareDMG/
-├── CMakeLists.txt
-│   # Build configuration
+```BareDMG/
+├── CMakeLists.txt     # Build configuration
 │
-├── docs/
-│   # Reference materials and technical documentation
-│   ├── gbctr.pdf
-│   └── The-Cycle-Accurate-GameBoy-Docs.pdf
-│
-├── external/
-│   # Third-party libraries
+├── docs/              # Reference materials and technical documentation
+|
+├── external/          # Third-party libraries
 │
 ├── include/
-│   ├── baredmg.h
-│   │   # Public API - interface between frontend and emulator core
+│   ├── baredmg.h      # Interface between frontend and emulator core
+|
+│   ├── gbemu.h        # "Motherboard" that wires components together
 │   │
-│   ├── gbemu.h
-│   │   # Emulator context - the "motherboard" that wires components together
-│   │
-│   ├── core/
-│   │   # Hardware component headers
-│   │   ├── cpu.h           # LR35902 CPU state and execution
+│   ├── core/          # Hardware component headers
 │   │   ├── bus.h           # Memory mapping and address routing
 │   │   ├── ppu.h           # Video timing and rendering
 │   │   ├── apu.h           # Audio timing and sample generation
@@ -81,21 +81,25 @@ BareDMG/
 │   │   ├── cartridge.h     # ROM loading and metadata
 │   │   ├── mbc.h           # Memory Bank Controller implementations
 │   │   └── utils.h         # Bit operations, masks, and common helpers
+│   │   └── cpu/
+|   │       └── cpu.h       # LR35902 CPU (registers & helper func)
+|   │       └── cpu_exec.h  # Declaration of CPU instructions (func)
 │   │
 │   └── frontend/
-│       └── frontend.h
-│           # Frontend abstraction (SDL, headless, debugger)
+│       └── frontend.h      # Frontend abstraction
 │
 ├── src/
+│   └── main.c              # Parsing the CLI arguments
+│   │
 │   ├── core/
-│   │   # Emulator core - the actual Game Boy implementation
-│   │   ├── gbemu.c        # System initialization and main loop
-│   │   ├── bus.c          # Address decoding and memory routing
+│   │   ├── gbemu.c         # System initialization and main loop
 │   │   ├── cpu/
-│   │   │   ├── cpu.c          # CPU state management
-│   │   │   ├── cpu_decode.c   # Instruction decoding
-│   │   │   ├── cpu_exec.c     # Instruction execution
-│   │   │   └── cpu_tables.c   # Opcode lookup tables
+│   │   │   ├── cpu.c           # CPU state management
+│   │   │   ├── cpu_decode.c    # Instruction decoding
+│   │   │   ├── cpu_exec.c      # Implementation of each instruction
+│   │   │   └── cpu_tables.c    # Opcode lookup tables
+│   │   |
+│   │   ├── bus.c          # Address decoding and memory routing
 │   │   ├── ppu.c          # PPU timing and rendering logic
 │   │   ├── apu.c          # APU channels and audio output
 │   │   ├── timer.c        # Timer register emulation
@@ -104,16 +108,13 @@ BareDMG/
 │   │   ├── mbc.c          # Bank switching implementations
 │   │   └── utils.c        # Helper function implementations
 │   │
-│   └── frontend/
-│       # Platform and UI code - isolated from core emulation
-│       ├── headless.c     # No UI, useful for testing
-│       └── sdl_frontend.c # SDL-based window, input, and audio
+│   └── frontend/          # Platform and UI code
+│       ├── headless.c         # No UI, useful for testing
+│       └── sdl_frontend.c     # SDL-based window, input, and audio
+|
+├── roms/                  # Test ROMs and game files (git ignored)
 │
-├── roms/
-│   # Test ROMs and game files (gitignored)
-│
-├── tests/
-│   # Unit tests and ROM validation
+├── tests/                 # Unit tests and ROM validation
 │
 ├── LICENSE
 ├── CONTRIBUTING.md
@@ -122,55 +123,10 @@ BareDMG/
 
 </details>
 
-<details>
-    <summary><h2>Build Order</h2></summary>
-
-The emulator will be built incrementally, implementing and testing each component before moving to the next.
-
-### 1. **Foundation (Utils & Cartridges)**
-
-- Implement bit manipulation utilities
-- ROM file loading and header parsing
-- Basic **MBC1** support
-
-### 2. **CPU Core**
-
-- Register implementation
-- Instruction decoding and execution
-- Interrupt handling
-- Validate with **Blargg's CPU test ROMs**
-
-### 3. **Memory System**
-
-- MMU address routing
-- Memory-mapped I/O
-- Bank switching logic
-
-### 4. **Timers & Joypad**
-
-- `DIV` and `TIMA` registers
-- Input state management
-
-### 5. **PPU (Graphics)**
-
-- LCD timing and modes
-- Background rendering
-- Sprite (OBJ) rendering
-- Window layer
-
-### 6. **APU (Sounds)**
-
-- Sound channels (pulse, wave, noise)
-- Audio mixing and output
-
-Each phase will be tested before moving forward. The emulator should remain in a working state at each step.
-
-</details>
 
 ## Building & Running
 
-<details>
-      <summary><h3>Required Tools & Libraries</h3></summary>
+### Required Tools & Libraries
 
 - `gcc` C Compiler
 - `CMake` Build system
@@ -181,8 +137,6 @@ Each phase will be tested before moving forward. The emulator should remain in a
 
 - `gdb` Debugger (optional)
 - `valgrind` (optional)
-
-</details>
 
 #### Installing required tools & libraries:
 
