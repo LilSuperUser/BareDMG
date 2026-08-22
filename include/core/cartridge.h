@@ -10,21 +10,21 @@
 // https://gbdev.io/pandocs/The_Cartridge_Header.html
 // ---------------------------------------------
 typedef struct {
-    u8   entry[4];        // Entry point (0x100 - 0x103)
-    u8   logo[0x30];      // Nintendo logo (0x0104 - 0x0133)
-    u8   title[16];       // Title in uppercase ASCII (0x0134 - 0x0143)
-    u8   new_lic_hi;      // Upper 8 bits of the of new license code (0x0144)
-    u8   new_lic_lo;      // Lower 8 bits of the new license code (0x0145)
-    u8   sgb_flag;        // SGB flag (0x0146)
-    u8   type;            // Cartridge type (0x0147)
-    u8   rom_size;        // ROM size (0x0148)
-    u8   ram_size;        // RAM size (0x0149)
-    u8   dest_code;       // Destination code (0x014A)
-    u8   old_lic_code;    // Old license code (0x14B) - if $33, use new_lic
-    u8   version;         // Mask ROM version number (0x014C)
-    u8   header_checksum; // 8-bit checksum for the header (0x014D)
-    u8   global_ck_hi;    // Upper 8 bits of 16-bit global checksum (0x014E)
-    u8   global_ck_lo;    // Lower 8 bits of 16-bit global checksum 0x014F)
+    u8 entry[4];        // Entry point (0x100 - 0x103)
+    u8 logo[0x30];      // Nintendo logo (0x0104 - 0x0133)
+    u8 title[16];       // Title in uppercase ASCII (0x0134 - 0x0143)
+    u8 new_lic_hi;      // Upper 8 bits of the of new license code (0x0144)
+    u8 new_lic_lo;      // Lower 8 bits of the new license code (0x0145)
+    u8 sgb_flag;        // SGB flag (0x0146)
+    u8 type;            // Cartridge type (0x0147)
+    u8 rom_size;        // ROM size (0x0148)
+    u8 ram_size;        // RAM size (0x0149)
+    u8 dest_code;       // Destination code (0x014A)
+    u8 old_lic_code;    // Old license code (0x14B) - if $33, use new_lic
+    u8 version;         // Mask ROM version number (0x014C)
+    u8 header_checksum; // 8-bit checksum for the header (0x014D)
+    u8 global_ck_hi;    // Upper 8 bits of 16-bit global checksum (0x014E)
+    u8 global_ck_lo;    // Lower 8 bits of 16-bit global checksum 0x014F)
 } RawRomHeader;
 
 // ---------------------------------------------

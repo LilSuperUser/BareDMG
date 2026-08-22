@@ -75,7 +75,8 @@ void gb_step(GameBoy *gb) {
             fflush(stdout);
             gb->io.sc     = CLEAR_BIT(gb->io.sc, 7);
             gb->io.if_reg = SET_BIT(gb->io.if_reg, 3);
-        } else {
+        }
+        else {
             gb->serial_cycles -= cycles;
         }
     }
@@ -204,7 +205,8 @@ GbRunStatus gb_run_test(GameBoy *gb, bool debug_mode) {
                 status = GB_RUN_STUCK;
                 break;
             }
-        } else {
+        }
+        else {
             pc_stuck_count = 0;
             last_pc        = pc_before;
         }
@@ -218,10 +220,12 @@ GbRunStatus gb_run_test(GameBoy *gb, bool debug_mode) {
 
     if (status == GB_RUN_STUCK) {
         // Already reported above
-    } else if (gb->cpu.halted) {
+    }
+    else if (gb->cpu.halted) {
         printf("Test completed (CPU halted)\n");
         status = GB_RUN_HALTED;
-    } else if (gb->cycles >= GB_TEST_MAX_CYCLES) {
+    }
+    else if (gb->cycles >= GB_TEST_MAX_CYCLES) {
         printf("Test timeout (exceeded %llu cycles)\n", (unsigned long long)GB_TEST_MAX_CYCLES);
         printf("Final PC: 0x%04X\n", gb->cpu.pc);
         status = GB_RUN_TIMEOUT;

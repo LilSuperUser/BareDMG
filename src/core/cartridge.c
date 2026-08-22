@@ -79,7 +79,8 @@ int cart_load(Cartridge *cart, const char *path) {
             cart->rom_size = 0;
             return 4;
         }
-    } else {
+    }
+    else {
         cart->ram = NULL;
     }
 
@@ -131,7 +132,8 @@ void parse_header(const RawRomHeader *raw, CartHeader *out) {
     if (raw->old_lic_code == 0x33) {
         /* out->lic_code = (raw->new_lic_hi << 8) | raw->new_lic_lo; */
         out->lic_code = MAKE_U16(raw->new_lic_hi, raw->new_lic_lo);
-    } else {
+    }
+    else {
         out->lic_code = raw->old_lic_code;
     }
 
@@ -490,7 +492,8 @@ const char *get_publisher_name(u16 lic_code, bool is_old_code) {
             default:
                 return "Unknown";
         }
-    } else {
+    }
+    else {
         // New license code (two ASCII bytes)
         // Stored as: (hi_byte << 8) | lo_byte
         // "01" = 0x30 ('0') and 0x31 ('1') = 0x3031

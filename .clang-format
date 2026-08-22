@@ -12,10 +12,18 @@ SpaceBeforeParensOptions:
     AfterFunctionDefinitionName: true
     AfterFunctionDeclarationName: true
 
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
 BraceWrapping:
+    AfterCaseLabel: false
+    AfterControlStatement: Never
+    AfterEnum: false
+    AfterFunction: false
+    AfterStruct: false
+    AfterUnion: false
     BeforeElse: true
+    IndentBraces: false
     SplitEmptyFunction: true
+    SplitEmptyRecord: true
 
 AlignConsecutiveDeclarations:
     Enabled: true

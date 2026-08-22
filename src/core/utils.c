@@ -67,7 +67,8 @@ u8 adjust_bcd(u8 value, bool subtract, bool carry, bool half_carry) {
             correction |= 0x60;
 
         value += correction;
-    } else {
+    }
+    else {
         // After SUB / SBC
         if (half_carry)
             correction |= 0x06;
