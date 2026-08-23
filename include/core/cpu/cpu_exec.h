@@ -330,4 +330,7 @@ u8 instr_scf(CPU *cpu);
 u8 instr_ccf(CPU *cpu);
 u8 instr_daa(CPU *cpu);
 
+// Dispatcher to CB prefixed instructions
+u8 instr_prefix_cb(CPU *cpu);
+
 #endif // !CPU_EXEC_H

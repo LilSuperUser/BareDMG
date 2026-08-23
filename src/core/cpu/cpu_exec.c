@@ -1,6 +1,7 @@
 // src/core/cpu/cpu_exec.c
 #include <core/cpu/cpu.h>
 #include <core/cpu/cpu_exec.h>
+#include <core/cpu/cpu_decode.h>
 #include <core/bus.h>
 #include <gbemu.h>
 #include <core/utils.h>
@@ -57,8 +58,86 @@ u8 instr_ei(CPU *cpu) {
     return 4;
 }
 
-// TODO: When implementing extended instruction set
-/* u8 instr_prefix_cb(CPU *cpu); */
+// ============================================================================
+// NOTE: CB-Prefixed Instructions (0xCB xx)
+// https://rgbds.gbdev.io/docs/v1.0.1/gbz80.7#Bit_shift_instructions
+// ============================================================================
+u8 instr_prefix_cb(CPU *cpu) {
+    CBOpcode op     = cpu_decode_cb(cpu);
+    bool     is_hl  = (op.r == 6);
+
+    u8       value  = cb_read_r8(cpu, op.r);
+    u8       result = value;
+
+    switch (op.group) {
+
+        case CB_GROUP_ROTATE_SHIFT: {
+            bool carry_out = false;
+            switch (op.bit_or_op) {
+                case 0: // RLC
+                    carry_out = CHECK_BIT(value, 7);
+                    result    = (value << 1) | (carry_out ? 1 : 0);
+                    break;
+                case 1: // RRC
+                    carry_out = CHECK_BIT(value, 0);
+                    result    = (value >> 1) | (carry_out ? 0x80 : 0);
+                    break;
+                case 2: // RL
+                    carry_out = CHECK_BIT(value, 7);
+                    result    = (value << 1) | (cpu_get_flag(cpu, FLAG_CARRY) ? 1 : 0);
+                    break;
+                case 3: // RR
+                    carry_out = CHECK_BIT(value, 0);
+                    result    = (value >> 1) | (cpu_get_flag(cpu, FLAG_CARRY) ? 0x80 : 0);
+                    break;
+                case 4: // SLA
+                    carry_out = CHECK_BIT(value, 7);
+                    result    = value << 1;
+                    break;
+                case 5: // SRA - bit 7 preserved (arithmetic shift)
+                    carry_out = CHECK_BIT(value, 0);
+                    result    = (value >> 1) | (value & 0x80);
+                    break;
+                case 6: // SWAP - no carry effect
+                    result = (u8)((value << 4) | (value >> 4));
+                    break;
+                case 7: // SRL
+                default:
+                    carry_out = CHECK_BIT(value, 0);
+                    result    = value >> 1;
+                    break;
+            }
+            cb_write_r8(cpu, op.r, result);
+            cpu->regs.f = 0; // N and H always cleared for this whole group
+            if (result == 0)
+                cpu_set_flag(cpu, FLAG_ZERO);
+            if (op.bit_or_op != 6 && carry_out)
+                cpu_set_flag(cpu, FLAG_CARRY); // SWAP always clears C
+            break;
+        }
+
+        case CB_GROUP_BIT: // BIT b, r8 - test only, no write-back, C unaffected
+            if (!CHECK_BIT(value, op.bit_or_op))
+                cpu_set_flag(cpu, FLAG_ZERO);
+            else
+                cpu_clear_flag(cpu, FLAG_ZERO);
+            cpu_clear_flag(cpu, FLAG_SUBT);
+            cpu_set_flag(cpu, FLAG_HF_CARRY);
+            break;
+
+        case CB_GROUP_RES: // RES b, r8 - no flags affected
+            cb_write_r8(cpu, op.r, CLEAR_BIT(value, op.bit_or_op));
+            break;
+
+        case CB_GROUP_SET: // SET b, r8 - no flags affected
+            cb_write_r8(cpu, op.r, SET_BIT(value, op.bit_or_op));
+            break;
+    }
+
+    if (op.group == CB_GROUP_BIT)
+        return is_hl ? 12 : 8;
+    return is_hl ? 16 : 8;
+}
 
 // ============================================================================
 // NOTE: 8-bit Load Instructions
