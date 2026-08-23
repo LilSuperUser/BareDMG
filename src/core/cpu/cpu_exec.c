@@ -2365,7 +2365,7 @@ u8 instr_pop_hl(CPU *cpu) {
 }
 
 u8 instr_pop_af(CPU *cpu) {
-    cpu->regs.f = mmu_read(cpu->gb, cpu->sp++);
+    cpu->regs.f = mmu_read(cpu->gb, cpu->sp++) & 0xF0; // Lower 4 bits always zero
     cpu->regs.a = mmu_read(cpu->gb, cpu->sp++);
     return 12;
 }
