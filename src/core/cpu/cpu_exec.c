@@ -2523,7 +2523,7 @@ u8 instr_call_a16(CPU *cpu) {
 
     // Update the pc
     cpu->pc = addr;
-    return 16;
+    return 24;
 }
 
 // JP cc a16
@@ -2607,8 +2607,8 @@ u8 instr_call_c_a16(CPU *cpu) {
 // None affected
 // ----------------------------------------------
 u8 instr_ret(CPU *cpu) {
-    u8 lo   = mmu_read(cpu->gb, cpu->pc++);
-    u8 hi   = mmu_read(cpu->gb, cpu->pc++);
+    u8 lo   = mmu_read(cpu->gb, cpu->sp++);
+    u8 hi   = mmu_read(cpu->gb, cpu->sp++);
 
     cpu->pc = MAKE_U16(hi, lo);
     return 16;
