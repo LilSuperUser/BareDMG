@@ -140,6 +140,92 @@ u8 instr_prefix_cb(CPU *cpu) {
 }
 
 // ============================================================================
+// NOTE: Decode-Based Dispatch for Regular Opcode Blocks
+// -----------------------------------------------------
+// Instructions: LD r8,n / LD r8,r8' / INC r8 / DEC r8 / ALU A,r8 / ALU A,n
+// are routed here directly from cpu_execute() in cpu_tables.c
+// with the raw opcode byte for decoding/dispatch.
+// -----------------------------------------------------
+// NOTE: `r8` also covers `(HL)` as an operand.
+// read_r8() and write_r8() handle the r8 index convention:
+// 0=B 1=C 2=D 3=E 4=H 5=L 6=(HL) 7=A
+// ============================================================================
+
+// Instructions: LD r8, n
+// 8 Opcodes: (0x06,0x0E,0x16,0x1E,0x26,0x2E,0x3E & 0x36)
+// Encoding: 00 rrr 110
+u8 instr_ld_r8_or_mem_hl_n(CPU *cpu, u8 opcode) {
+    u8 r     = GET_BITS(opcode, 3, 3);
+    u8 value = mmu_read(cpu->gb, cpu->pc++);
+
+    write_r8(cpu, r, value);
+    return (r == 6) ? 12 : 8; // LD (HL),n costs 12, everything else costs 8
+}
+
+// Instructions: LD r8, r8'
+// 63 Opcodes: (0x40-0x7F except 0x76=HALT)
+// Encoding: 01 ddd sss
+u8 instr_ld_r8_r8_or_mem_hl(CPU *cpu, u8 opcode) {
+    u8 src  = GET_BITS(opcode, 0, 3);
+    u8 dest = GET_BITS(opcode, 3, 3);
+
+    write_r8(cpu, dest, read_r8(cpu, src));
+    return (dest == 6 || src == 6) ? 8 : 4;
+}
+
+// Instructions: INC r8
+// 8 Opcodes: (0x04,0x14,0x24,0x34,0x0C,0x1C,0x2C,0x3C)
+// Encoding: 00 rrr 100
+u8 instr_inc_r8_or_mem_hl(CPU *cpu, u8 opcode) {
+    u8   r         = GET_BITS(opcode, 3, 3);
+    u8   value     = read_r8(cpu, r);
+    u8   result    = value + 1;
+
+    bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+    cpu->regs.f    = 0;
+    if (result == 0)
+        cpu_set_flag(cpu, FLAG_ZERO);
+    if ((value & 0x0F) == 0x0F)
+        cpu_set_flag(cpu, FLAG_HF_CARRY);
+    if (old_carry)
+        cpu_set_flag(cpu, FLAG_CARRY);
+
+    write_r8(cpu, r, result);
+    return (r == 6) ? 12 : 4;
+}
+
+// Instructions: DEC r8
+// 8 Opcodes: (0x05,0x15,0x25,0x35,0x0D,0x1D,0x2D,0x3D)
+// Encoding: 00 rrr 101
+u8 instr_dec_r8_or_mem_hl(CPU *cpu, u8 opcode) {
+    u8   r         = GET_BITS(opcode, 3, 3);
+    u8   value     = read_r8(cpu, r);
+    u8   result    = value - 1;
+
+    bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+    cpu->regs.f    = FLAG_SUBT;
+    if (result == 0)
+        cpu_set_flag(cpu, FLAG_ZERO);
+    if ((value & 0x0F) == 0)
+        cpu_set_flag(cpu, FLAG_HF_CARRY);
+    if (old_carry)
+        cpu_set_flag(cpu, FLAG_CARRY);
+
+    write_r8(cpu, r, result);
+    return (r == 6) ? 12 : 4;
+}
+
+// TODO: Dispatch: Instructions: ALU A, n
+// 8 Opcodes: (0xC6,0xD6,0xE6,0xF6,0xCE,0xDE,0xEE,0xFE)
+// Encoding: 11 ooo 110
+// u8 instr_alu_a_n(CPU *cpu, u8 opcode) {}
+
+// TODO: Dispatch: Instructions: ALU A, r8
+// 64 Opcodes: (0x80-0xBF)
+// Encoding: 10 ooo sss
+// u8 instr_alu_a_r8_or_mem_hl(CPU *cpu, u8 opcode) {}
+
+// ============================================================================
 // NOTE: 8-bit Load Instructions
 // ============================================================================
 

@@ -333,4 +333,26 @@ u8 instr_daa(CPU *cpu);
 // Dispatcher to CB prefixed instructions
 u8 instr_prefix_cb(CPU *cpu);
 
+// NOTE: read_r8() and write_r8() ( formerly cb_read_r8() and cb_write_r8() )
+// already handle (HL) as just another r8 slot.
+
+// Dispatcher to LD r8, n instructions (8 opcodes)
+u8 instr_ld_r8_or_mem_hl_n(CPU *cpu, u8 opcode);
+
+// Dispatcher to LD r8, r8' instructions (63 opcodes)
+// 0x76 opcode is HALT
+u8 instr_ld_r8_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
+// Dispatcher to INC r8 instructions (8 opcodes)
+u8 instr_inc_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
+// Dispatcher to DEC r8 instructions (8 opcodes)
+u8 instr_dec_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
+// Dispatcher to ALU A, n instructions (8 opcodes)
+u8 instr_alu_a_n(CPU *cpu, u8 opcode);
+
+// Dispatcher to ALU A, r8 instructions (64 opcodes)
+u8 instr_alu_a_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
 #endif // !CPU_EXEC_H
