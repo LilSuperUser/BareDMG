@@ -12,91 +12,6 @@ typedef u8 (*InstrFunc)(CPU *cpu);
 // 8-bit Load Instructions
 // =====================================================
 
-// Immediate loads
-u8 instr_ld_b_n(CPU *cpu);
-u8 instr_ld_c_n(CPU *cpu);
-u8 instr_ld_d_n(CPU *cpu);
-u8 instr_ld_e_n(CPU *cpu);
-u8 instr_ld_h_n(CPU *cpu);
-u8 instr_ld_l_n(CPU *cpu);
-u8 instr_ld_a_n(CPU *cpu);
-
-// Register <-> Register
-u8 instr_ld_b_b(CPU *cpu);
-u8 instr_ld_b_c(CPU *cpu);
-u8 instr_ld_b_d(CPU *cpu);
-u8 instr_ld_b_e(CPU *cpu);
-u8 instr_ld_b_h(CPU *cpu);
-u8 instr_ld_b_l(CPU *cpu);
-u8 instr_ld_b_a(CPU *cpu);
-
-u8 instr_ld_c_b(CPU *cpu);
-u8 instr_ld_c_c(CPU *cpu);
-u8 instr_ld_c_d(CPU *cpu);
-u8 instr_ld_c_e(CPU *cpu);
-u8 instr_ld_c_h(CPU *cpu);
-u8 instr_ld_c_l(CPU *cpu);
-u8 instr_ld_c_a(CPU *cpu);
-
-u8 instr_ld_d_b(CPU *cpu);
-u8 instr_ld_d_c(CPU *cpu);
-u8 instr_ld_d_d(CPU *cpu);
-u8 instr_ld_d_e(CPU *cpu);
-u8 instr_ld_d_h(CPU *cpu);
-u8 instr_ld_d_l(CPU *cpu);
-u8 instr_ld_d_a(CPU *cpu);
-
-u8 instr_ld_e_b(CPU *cpu);
-u8 instr_ld_e_c(CPU *cpu);
-u8 instr_ld_e_d(CPU *cpu);
-u8 instr_ld_e_e(CPU *cpu);
-u8 instr_ld_e_h(CPU *cpu);
-u8 instr_ld_e_l(CPU *cpu);
-u8 instr_ld_e_a(CPU *cpu);
-
-u8 instr_ld_h_b(CPU *cpu);
-u8 instr_ld_h_c(CPU *cpu);
-u8 instr_ld_h_d(CPU *cpu);
-u8 instr_ld_h_e(CPU *cpu);
-u8 instr_ld_h_h(CPU *cpu);
-u8 instr_ld_h_l(CPU *cpu);
-u8 instr_ld_h_a(CPU *cpu);
-
-u8 instr_ld_l_b(CPU *cpu);
-u8 instr_ld_l_c(CPU *cpu);
-u8 instr_ld_l_d(CPU *cpu);
-u8 instr_ld_l_e(CPU *cpu);
-u8 instr_ld_l_h(CPU *cpu);
-u8 instr_ld_l_l(CPU *cpu);
-u8 instr_ld_l_a(CPU *cpu);
-
-u8 instr_ld_a_b(CPU *cpu);
-u8 instr_ld_a_c(CPU *cpu);
-u8 instr_ld_a_d(CPU *cpu);
-u8 instr_ld_a_e(CPU *cpu);
-u8 instr_ld_a_h(CPU *cpu);
-u8 instr_ld_a_l(CPU *cpu);
-u8 instr_ld_a_a(CPU *cpu);
-
-// Memory via HL
-u8 instr_ld_b_mem_hl(CPU *cpu);
-u8 instr_ld_c_mem_hl(CPU *cpu);
-u8 instr_ld_d_mem_hl(CPU *cpu);
-u8 instr_ld_e_mem_hl(CPU *cpu);
-u8 instr_ld_h_mem_hl(CPU *cpu);
-u8 instr_ld_l_mem_hl(CPU *cpu);
-u8 instr_ld_a_mem_hl(CPU *cpu);
-
-u8 instr_ld_mem_hl_b(CPU *cpu);
-u8 instr_ld_mem_hl_c(CPU *cpu);
-u8 instr_ld_mem_hl_d(CPU *cpu);
-u8 instr_ld_mem_hl_e(CPU *cpu);
-u8 instr_ld_mem_hl_h(CPU *cpu);
-u8 instr_ld_mem_hl_l(CPU *cpu);
-u8 instr_ld_mem_hl_a(CPU *cpu);
-
-u8 instr_ld_mem_hl_n(CPU *cpu);
-
 // Special memory loads
 u8 instr_ld_mem_bc_a(CPU *cpu);
 u8 instr_ld_mem_de_a(CPU *cpu);
@@ -128,109 +43,6 @@ u8 instr_ld_sp_nn(CPU *cpu);
 u8 instr_ld_mem_a16_sp(CPU *cpu);
 u8 instr_ld_sp_hl(CPU *cpu);
 u8 instr_ld_hl_sp_e8(CPU *cpu);
-
-// =====================================================
-// 8-bit Arithmetic & Logic
-// =====================================================
-
-u8 instr_add_a_b(CPU *cpu);
-u8 instr_add_a_c(CPU *cpu);
-u8 instr_add_a_d(CPU *cpu);
-u8 instr_add_a_e(CPU *cpu);
-u8 instr_add_a_h(CPU *cpu);
-u8 instr_add_a_l(CPU *cpu);
-u8 instr_add_a_mem_hl(CPU *cpu);
-u8 instr_add_a_a(CPU *cpu);
-u8 instr_add_a_n(CPU *cpu);
-
-u8 instr_adc_a_b(CPU *cpu);
-u8 instr_adc_a_c(CPU *cpu);
-u8 instr_adc_a_d(CPU *cpu);
-u8 instr_adc_a_e(CPU *cpu);
-u8 instr_adc_a_h(CPU *cpu);
-u8 instr_adc_a_l(CPU *cpu);
-u8 instr_adc_a_mem_hl(CPU *cpu);
-u8 instr_adc_a_a(CPU *cpu);
-u8 instr_adc_a_n(CPU *cpu);
-
-u8 instr_sub_a_b(CPU *cpu);
-u8 instr_sub_a_c(CPU *cpu);
-u8 instr_sub_a_d(CPU *cpu);
-u8 instr_sub_a_e(CPU *cpu);
-u8 instr_sub_a_h(CPU *cpu);
-u8 instr_sub_a_l(CPU *cpu);
-u8 instr_sub_a_mem_hl(CPU *cpu);
-u8 instr_sub_a_a(CPU *cpu);
-u8 instr_sub_a_n(CPU *cpu);
-
-u8 instr_sbc_a_b(CPU *cpu);
-u8 instr_sbc_a_c(CPU *cpu);
-u8 instr_sbc_a_d(CPU *cpu);
-u8 instr_sbc_a_e(CPU *cpu);
-u8 instr_sbc_a_h(CPU *cpu);
-u8 instr_sbc_a_l(CPU *cpu);
-u8 instr_sbc_a_mem_hl(CPU *cpu);
-u8 instr_sbc_a_a(CPU *cpu);
-u8 instr_sbc_a_n(CPU *cpu);
-
-u8 instr_and_a_b(CPU *cpu);
-u8 instr_and_a_c(CPU *cpu);
-u8 instr_and_a_d(CPU *cpu);
-u8 instr_and_a_e(CPU *cpu);
-u8 instr_and_a_h(CPU *cpu);
-u8 instr_and_a_l(CPU *cpu);
-u8 instr_and_a_mem_hl(CPU *cpu);
-u8 instr_and_a_a(CPU *cpu);
-u8 instr_and_a_n(CPU *cpu);
-
-u8 instr_or_a_b(CPU *cpu);
-u8 instr_or_a_c(CPU *cpu);
-u8 instr_or_a_d(CPU *cpu);
-u8 instr_or_a_e(CPU *cpu);
-u8 instr_or_a_h(CPU *cpu);
-u8 instr_or_a_l(CPU *cpu);
-u8 instr_or_a_mem_hl(CPU *cpu);
-u8 instr_or_a_a(CPU *cpu);
-u8 instr_or_a_n(CPU *cpu);
-
-u8 instr_xor_a_b(CPU *cpu);
-u8 instr_xor_a_c(CPU *cpu);
-u8 instr_xor_a_d(CPU *cpu);
-u8 instr_xor_a_e(CPU *cpu);
-u8 instr_xor_a_h(CPU *cpu);
-u8 instr_xor_a_l(CPU *cpu);
-u8 instr_xor_a_mem_hl(CPU *cpu);
-u8 instr_xor_a_a(CPU *cpu);
-u8 instr_xor_a_n(CPU *cpu);
-
-u8 instr_cp_a_b(CPU *cpu);
-u8 instr_cp_a_c(CPU *cpu);
-u8 instr_cp_a_d(CPU *cpu);
-u8 instr_cp_a_e(CPU *cpu);
-u8 instr_cp_a_h(CPU *cpu);
-u8 instr_cp_a_l(CPU *cpu);
-u8 instr_cp_a_mem_hl(CPU *cpu);
-u8 instr_cp_a_a(CPU *cpu);
-u8 instr_cp_a_n(CPU *cpu);
-
-// INC / DEC
-u8 instr_inc_b(CPU *cpu);
-u8 instr_inc_c(CPU *cpu);
-u8 instr_inc_d(CPU *cpu);
-u8 instr_inc_e(CPU *cpu);
-u8 instr_inc_h(CPU *cpu);
-u8 instr_inc_l(CPU *cpu);
-u8 instr_inc_a(CPU *cpu);
-u8 instr_inc_mem_hl(CPU *cpu);
-
-u8 instr_dec_b(CPU *cpu);
-u8 instr_dec_c(CPU *cpu);
-u8 instr_dec_d(CPU *cpu);
-u8 instr_dec_e(CPU *cpu);
-u8 instr_dec_h(CPU *cpu);
-u8 instr_dec_l(CPU *cpu);
-u8 instr_dec_a(CPU *cpu);
-u8 instr_dec_mem_hl(CPU *cpu);
 
 // =====================================================
 // 16-bit Arithmetic
@@ -314,8 +126,6 @@ u8 instr_stop(CPU *cpu);
 u8 instr_halt(CPU *cpu);
 u8 instr_di(CPU *cpu);
 u8 instr_ei(CPU *cpu);
-// TODO:
-// u8 instr_prefix_cb(CPU *cpu);
 
 // =====================================================
 // Rotates / Flags
@@ -332,5 +142,27 @@ u8 instr_daa(CPU *cpu);
 
 // Dispatcher to CB prefixed instructions
 u8 instr_prefix_cb(CPU *cpu);
+
+// NOTE: read_r8() and write_r8() ( formerly cb_read_r8() and cb_write_r8() )
+// already handle (HL) as just another r8 slot.
+
+// Dispatcher to LD r8, n instructions (8 opcodes)
+u8 instr_ld_r8_or_mem_hl_n(CPU *cpu, u8 opcode);
+
+// Dispatcher to LD r8, r8' instructions (63 opcodes)
+// 0x76 opcode is HALT
+u8 instr_ld_r8_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
+// Dispatcher to INC r8 instructions (8 opcodes)
+u8 instr_inc_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
+// Dispatcher to DEC r8 instructions (8 opcodes)
+u8 instr_dec_r8_or_mem_hl(CPU *cpu, u8 opcode);
+
+// Dispatcher to ALU A, n instructions (8 opcodes)
+u8 instr_alu_a_n(CPU *cpu, u8 opcode);
+
+// Dispatcher to ALU A, r8 instructions (64 opcodes)
+u8 instr_alu_a_r8_or_mem_hl(CPU *cpu, u8 opcode);
 
 #endif // !CPU_EXEC_H
