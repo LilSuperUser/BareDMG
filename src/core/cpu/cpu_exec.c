@@ -215,15 +215,141 @@ u8 instr_dec_r8_or_mem_hl(CPU *cpu, u8 opcode) {
     return (r == 6) ? 12 : 4;
 }
 
-// TODO: Dispatch: Instructions: ALU A, n
+// Shared ALU core (helper for ALU A,n and ALU A,r8):
+//  - Applies `op` to A and `value`
+//  - Writes result back to A
+// (except CP, which only sets flags).
+static void alu_apply(CPU *cpu, AluOp op, u8 value) {
+    u8 a = cpu->regs.a;
+    u8 result;
+    u8 carry_in;
+
+    switch (op) {
+        case ALU_ADD:
+            result      = a + value;
+
+            cpu->regs.f = 0;
+            if (result == 0)
+                cpu_set_flag(cpu, FLAG_ZERO);
+            if (check_half_carry_add(a, value))
+                cpu_set_flag(cpu, FLAG_HF_CARRY);
+            if (check_carry_add(a, value))
+                cpu_set_flag(cpu, FLAG_CARRY);
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_ADC:
+            carry_in    = cpu_get_flag(cpu, FLAG_CARRY) ? 1 : 0;
+            result      = a + value + carry_in;
+
+            cpu->regs.f = 0;
+            if (result == 0)
+                cpu_set_flag(cpu, FLAG_ZERO);
+            if (check_half_carry_adc(a, value, carry_in))
+                cpu_set_flag(cpu, FLAG_HF_CARRY);
+            if (check_carry_adc(a, value, carry_in))
+                cpu_set_flag(cpu, FLAG_CARRY);
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_SUB:
+            result      = a - value;
+
+            cpu->regs.f = FLAG_SUBT;
+            if (result == 0)
+                cpu_set_flag(cpu, FLAG_ZERO);
+            if (check_half_carry_sub(a, value))
+                cpu_set_flag(cpu, FLAG_HF_CARRY);
+            if (check_carry_sub(a, value))
+                cpu_set_flag(cpu, FLAG_CARRY);
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_SBC:
+            carry_in    = cpu_get_flag(cpu, FLAG_CARRY) ? 1 : 0;
+            result      = a - value - carry_in;
+
+            cpu->regs.f = FLAG_SUBT;
+            if (result == 0)
+                cpu->regs.f |= FLAG_ZERO;
+            if (check_half_carry_sbc(a, value, carry_in))
+                cpu->regs.f |= FLAG_HF_CARRY;
+            if (check_carry_sbc(a, value, carry_in))
+                cpu->regs.f |= FLAG_CARRY;
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_AND:
+            result      = a & value;
+
+            cpu->regs.f = FLAG_HF_CARRY;
+            if (result == 0)
+                cpu->regs.f |= FLAG_ZERO;
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_XOR:
+            result      = a ^ value;
+
+            cpu->regs.f = 0;
+            if (result == 0)
+                cpu->regs.f |= FLAG_ZERO;
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_OR:
+            result      = a | value;
+
+            cpu->regs.f = 0;
+            if (result == 0)
+                cpu->regs.f |= FLAG_ZERO;
+
+            cpu->regs.a = result;
+            break;
+
+        case ALU_CP:
+            result      = a - value;
+
+            cpu->regs.f = FLAG_SUBT;
+            if (result == 0)
+                cpu->regs.f |= FLAG_ZERO;
+            if (check_half_carry_sub(a, value))
+                cpu->regs.f |= FLAG_HF_CARRY;
+            if (check_carry_sub(a, value))
+                cpu->regs.f |= FLAG_CARRY;
+
+            break;
+    }
+}
+
+// Instructions: ALU A, n
 // 8 Opcodes: (0xC6,0xD6,0xE6,0xF6,0xCE,0xDE,0xEE,0xFE)
 // Encoding: 11 ooo 110
-// u8 instr_alu_a_n(CPU *cpu, u8 opcode) {}
+u8 instr_alu_a_n(CPU *cpu, u8 opcode) {
+    AluOp op    = (AluOp)GET_BITS(opcode, 3, 3);
+    u8    value = mmu_read(cpu->gb, cpu->pc++);
 
-// TODO: Dispatch: Instructions: ALU A, r8
+    alu_apply(cpu, op, value);
+    return 8;
+}
+
+// Instructions: ALU A, r8
 // 64 Opcodes: (0x80-0xBF)
 // Encoding: 10 ooo sss
-// u8 instr_alu_a_r8_or_mem_hl(CPU *cpu, u8 opcode) {}
+u8 instr_alu_a_r8_or_mem_hl(CPU *cpu, u8 opcode) {
+    AluOp op    = (AluOp)GET_BITS(opcode, 3, 3);
+    u8    r     = GET_BITS(opcode, 0, 3);
+    u8    value = read_r8(cpu, r);
+
+    alu_apply(cpu, op, value);
+    return (r == 6) ? 8 : 4;
+}
 
 // ============================================================================
 // NOTE: 8-bit Load Instructions
