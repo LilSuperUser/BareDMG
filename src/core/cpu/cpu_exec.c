@@ -66,7 +66,7 @@ u8 instr_prefix_cb(CPU *cpu) {
     CBOpcode op     = cpu_decode_cb(cpu);
     bool     is_hl  = (op.r == 6);
 
-    u8       value  = cb_read_r8(cpu, op.r);
+    u8       value  = read_r8(cpu, op.r);
     u8       result = value;
 
     switch (op.group) {
@@ -107,7 +107,7 @@ u8 instr_prefix_cb(CPU *cpu) {
                     result    = value >> 1;
                     break;
             }
-            cb_write_r8(cpu, op.r, result);
+            write_r8(cpu, op.r, result);
             cpu->regs.f = 0; // N and H always cleared for this whole group
             if (result == 0)
                 cpu_set_flag(cpu, FLAG_ZERO);
@@ -126,11 +126,11 @@ u8 instr_prefix_cb(CPU *cpu) {
             break;
 
         case CB_GROUP_RES: // RES b, r8 - no flags affected
-            cb_write_r8(cpu, op.r, CLEAR_BIT(value, op.bit_or_op));
+            write_r8(cpu, op.r, CLEAR_BIT(value, op.bit_or_op));
             break;
 
         case CB_GROUP_SET: // SET b, r8 - no flags affected
-            cb_write_r8(cpu, op.r, SET_BIT(value, op.bit_or_op));
+            write_r8(cpu, op.r, SET_BIT(value, op.bit_or_op));
             break;
     }
 

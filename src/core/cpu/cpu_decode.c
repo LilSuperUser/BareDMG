@@ -16,7 +16,7 @@ CBOpcode cpu_decode_cb(CPU *cpu) {
 
 // r8 index convention shared across the CPU's opcode encoding:
 // 0=B 1=C 2=D 3=E 4=H 5=L 6=(HL) 7=A
-u8 cb_read_r8(CPU *cpu, u8 r) {
+u8 read_r8(CPU *cpu, u8 r) {
     switch (r) {
         case 0:
             return cpu->regs.b;
@@ -39,7 +39,7 @@ u8 cb_read_r8(CPU *cpu, u8 r) {
     }
 }
 
-void cb_write_r8(CPU *cpu, u8 r, u8 value) {
+void write_r8(CPU *cpu, u8 r, u8 value) {
     switch (r) {
         case 0:
             cpu->regs.b = value;
