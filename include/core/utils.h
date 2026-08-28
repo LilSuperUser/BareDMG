@@ -28,6 +28,7 @@ typedef int64_t  i64;
 #define BLUE "\033[94m"         // Debug
 #define MAGENTA "\033[95m"      // Emulator-specific
 #define BOLD_WHITE "\033[1;97m" // Bold white
+#define ORANGE "\033[38;5;208m" // Serial
 #define RESET "\033[0m"
 
 // ---------------------------------------------
@@ -39,6 +40,7 @@ void put_success(const char *format, ...);
 void put_info(const char *format, ...);
 void put_debug(const char *format, ...);
 void put_emulator(const char *format, ...);
+void put_serial(const char *format, ...);
 void put_bold(const char *msg);
 
 // ---------------------------------------------
