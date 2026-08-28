@@ -3,6 +3,48 @@
 #include <core/bus.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
+
+// ---------------------------------------------
+// Serial Output
+// Buffers transmitted serial bytes into whole lines.
+// ---------------------------------------------
+#define SERIAL_LINE_BUF_SIZE 256
+static char   serial_line_buf[SERIAL_LINE_BUF_SIZE];
+static size_t serial_line_len = 0;
+
+static void   gb_serial_flush_line(void) {
+    if (serial_line_len == 0)
+        return;
+    serial_line_buf[serial_line_len] = '\0';
+    put_serial("%s\n", serial_line_buf);
+    serial_line_len = 0;
+}
+
+// Called from gb_step() once per completed serial byte transfer
+void gb_serial_receive(u8 byte) {
+    if (byte == '\n') {
+        gb_serial_flush_line();
+        return;
+    }
+
+    // Swallow bare CR (GB test ROMs pair it with \n)
+    if (byte == '\r')
+        return;
+
+    // Prevent overflow
+    if (serial_line_len + 1 >= SERIAL_LINE_BUF_SIZE)
+        gb_serial_flush_line();
+
+    serial_line_buf[serial_line_len++] = isprint((unsigned char)byte) ? (char)byte : '.';
+}
+
+// Flush any partial-buffered line
+// NOTE: Call this once at the end of a run
+// so trailing output without a final \n doesn't get silently dropped.
+void gb_serial_flush(void) {
+    gb_serial_flush_line();
+}
 
 // Initialize the GameBoy instance
 void gb_init(GameBoy *gb) {

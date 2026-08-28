@@ -125,6 +125,12 @@ void        gb_print_state(GameBoy *gb);
 void        gb_print_cart_info(GameBoy *gb);
 
 // ---------------------------------------------
+// Serial output
+// ---------------------------------------------
+void        gb_serial_receive(u8 byte);
+void        gb_serial_flush(void);
+
+// ---------------------------------------------
 // I/O Handlers (called by MMU)
 // ---------------------------------------------
 u8          io_read(GameBoy *gb, u16 addr);
