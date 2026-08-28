@@ -296,13 +296,11 @@ void io_write(GameBoy *gb, u16 addr, u8 value) {
         case 0xFF01:
             gb->io.sb = value;
             break;
+
         case 0xFF02:
             gb->io.sc = value;
-            if (CHECK_BIT(value, 7)) {
-                printf("[SERIAL] Starting transfer, SB=0x%02X ('%c')\n", gb->io.sb,
-                       gb->io.sb >= 0x20 && gb->io.sb < 0x7F ? gb->io.sb : '?');
+            if (CHECK_BIT(value, 7))
                 gb->serial_cycles = 4096;
-            }
             break;
 
         // Timer
