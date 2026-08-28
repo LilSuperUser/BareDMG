@@ -141,6 +141,13 @@ void put_emulator(const char *format, ...) {
     va_end(args);
 }
 
+void put_serial(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_message(stdout, ORANGE, "SERIAL", format, args);
+    va_end(args);
+}
+
 void put_bold(const char *msg) {
     printf("%s%s%s", RESET, BOLD_WHITE, msg);
     printf("%s", RESET);
