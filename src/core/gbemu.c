@@ -113,14 +113,16 @@ void gb_step(GameBoy *gb) {
         if (gb->serial_cycles <= cycles) {
             // Transfer complete
             gb->serial_cycles = 0;
-            printf("[SERIAL] Outputting: '%c' (0x%02X)\n",
-                   gb->io.sb >= 0x20 && gb->io.sb < 0x7F ? gb->io.sb : '?', gb->io.sb);
-            putchar(gb->io.sb);
-            fflush(stdout);
+
+            // Output the transferred byte
+            gb_serial_receive(gb->io.sb);
+
+            // Clear transfer flag and request serial interrutp
             gb->io.sc     = CLEAR_BIT(gb->io.sc, 7);
             gb->io.if_reg = SET_BIT(gb->io.if_reg, 3);
         }
         else {
+            // Waiting for transfer to finish
             gb->serial_cycles -= cycles;
         }
     }
@@ -200,6 +202,8 @@ GbRunStatus gb_run_step(GameBoy *gb, int step_count, bool debug_mode) {
         }
     }
 
+    gb_serial_flush();
+
     gb_print_state(gb);
     return status;
 }
@@ -226,6 +230,8 @@ GbRunStatus gb_run_continuous(GameBoy *gb, bool debug_mode) {
                       cpu_read_de(&gb->cpu), cpu_read_hl(&gb->cpu));
         }
     }
+
+    gb_serial_flush();
 
     if (gb->cpu.halted) {
         status = GB_RUN_HALTED;
@@ -292,6 +298,8 @@ GbRunStatus gb_run_test(GameBoy *gb, bool debug_mode) {
             put_debug("[%llu cycles] PC=0x%04X\n", (unsigned long long)gb->cycles, gb->cpu.pc);
         }
     }
+
+    gb_serial_flush();
 
     puts("");
     put_bold("────────────────────────────────────────────────────────────────\n\n");
